@@ -239,7 +239,7 @@
   <div class="container">
     <!-- Status Indicator -->
     <div class="indicator">
-      <div class="icon">👂</div>
+      <div class="icon">🌀</div>
     </div>
     
     <!-- State Text -->
