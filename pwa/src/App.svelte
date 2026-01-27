@@ -18,6 +18,10 @@
   let player: AudioPlayer | null = null;
   let wakeLock: WakeLock | null = null;
   let sessionActive = false;
+  
+  // Mute states
+  let micMuted = false;   // Mute Me - stops sending audio
+  let ttsEnabled = true;  // Mute You - stops TTS playback
 
   // Reactive state from stores
   let currentState: AppState = 'idle';
@@ -54,8 +58,14 @@
         player?.addChunk(base64);
       },
       onAudioEnd: () => {
-        appState.set('speaking');
-        player?.play();
+        if (ttsEnabled) {
+          appState.set('speaking');
+          player?.play();
+        } else {
+          // TTS disabled - skip to listening
+          appState.set('listening');
+          vad?.resume();
+        }
       },
       onStatus: (state) => {
         if (state === 'transcribing' || state === 'thinking') {
@@ -93,10 +103,12 @@
   function initVAD(): void {
     vad = new VoiceActivityDetector({
       onSpeechStart: () => {
-        appState.set('recording');
+        if (!micMuted) {
+          appState.set('recording');
+        }
       },
       onSpeechEnd: (audio) => {
-        if (!sessionActive) return;
+        if (!sessionActive || micMuted) return;
         
         // Pause VAD while processing
         vad?.pause();
@@ -107,6 +119,22 @@
         ws?.sendAudio(base64);
       },
     });
+  }
+  
+  // Toggle mic mute
+  function toggleMicMute(): void {
+    micMuted = !micMuted;
+    if (micMuted && currentState === 'recording') {
+      appState.set('listening');
+    }
+  }
+  
+  // Toggle TTS
+  function toggleTTS(): void {
+    ttsEnabled = !ttsEnabled;
+    if (!ttsEnabled) {
+      player?.stop();
+    }
   }
 
   // Start session
@@ -266,6 +294,28 @@
           Start Session
         </button>
       {:else}
+        <!-- Mute toggles -->
+        <div class="mute-controls">
+          <button 
+            class="btn-mute" 
+            class:muted={micMuted}
+            onclick={toggleMicMute}
+            title={micMuted ? 'Unmute mic' : 'Mute mic'}
+          >
+            {micMuted ? '🔇' : '🎤'}
+            <span class="mute-label">{micMuted ? 'Mic Off' : 'Mic On'}</span>
+          </button>
+          <button 
+            class="btn-mute" 
+            class:muted={!ttsEnabled}
+            onclick={toggleTTS}
+            title={ttsEnabled ? 'Mute TTS' : 'Unmute TTS'}
+          >
+            {ttsEnabled ? '🔊' : '🔇'}
+            <span class="mute-label">{ttsEnabled ? 'TTS On' : 'TTS Off'}</span>
+          </button>
+        </div>
+        
         <button class="btn end" onclick={endSession}>
           End Session
         </button>
@@ -506,6 +556,44 @@
 
   .btn.end:hover {
     background: rgba(255, 80, 80, 0.1);
+  }
+
+  /* Mute controls */
+  .mute-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .btn-mute {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 24px;
+    padding: 12px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-mute:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .btn-mute.muted {
+    background: rgba(255, 80, 80, 0.2);
+    border-color: rgba(255, 80, 80, 0.5);
+  }
+
+  .mute-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    opacity: 0.7;
   }
 
   /* Safe area for notched devices */
