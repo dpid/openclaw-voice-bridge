@@ -142,6 +142,10 @@ export class ProxyWebSocket {
     this.send({ type: 'audio', data: base64 });
   }
 
+  sendTtsState(enabled: boolean): void {
+    this.send({ type: 'tts_state', enabled });
+  }
+
   isConnected(): boolean {
     return this.ws?.readyState === WebSocket.OPEN;
   }

@@ -146,8 +146,11 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     console.log('[Pipeline] Sending to gateway...');
     sendMessage(ws, { type: 'status', state: 'thinking' });
     
-    // Prefix with 🎤 so Vincent knows this is a voice message
-    const response = await sendToGateway(`🎤 ${transcript}`);
+    // Prefix message so Vincent knows this is voice
+    // 🎤 = TTS on (be concise), 📖 = TTS off (full response OK)
+    const ttsEnabled = connectionTtsState.get(ws) ?? true;
+    const prefix = ttsEnabled ? '🎤' : '📖';
+    const response = await sendToGateway(`${prefix} ${transcript}`);
     console.log(`[Pipeline] Response: "${response.text.slice(0, 100)}..." mediaUrls:`, response.mediaUrls);
     
     // Send response text to client (use text if available, or a placeholder)
@@ -216,9 +219,15 @@ async function generateAndStreamTTS(ws: WebSocket, text: string): Promise<void> 
   );
 }
 
+// Track TTS state per connection
+const connectionTtsState = new WeakMap<WebSocket, boolean>();
+
 wss.on('connection', (ws, req) => {
   const clientIp = req.socket.remoteAddress;
   console.log(`[WS] Client connected from ${clientIp}`);
+  
+  // Default TTS to enabled
+  connectionTtsState.set(ws, true);
 
   ws.on('message', async (data) => {
     try {
@@ -231,6 +240,11 @@ wss.on('connection', (ws, req) => {
           
         case 'ping':
           sendMessage(ws, { type: 'pong' });
+          break;
+          
+        case 'tts_state':
+          connectionTtsState.set(ws, msg.enabled);
+          console.log(`[WS] TTS state changed: ${msg.enabled ? 'ON' : 'OFF'}`);
           break;
           
         default:

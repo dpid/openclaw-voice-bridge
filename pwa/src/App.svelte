@@ -43,6 +43,8 @@
       onConnect: () => {
         connected.set(true);
         console.log('[App] WebSocket connected');
+        // Send initial TTS state
+        ws?.sendTtsState(ttsEnabled);
       },
       onDisconnect: () => {
         connected.set(false);
@@ -135,6 +137,8 @@
     if (!ttsEnabled) {
       player?.stop();
     }
+    // Notify server of TTS state change
+    ws?.sendTtsState(ttsEnabled);
   }
 
   // Start session

@@ -64,4 +64,9 @@ export interface PingMessage {
   type: 'ping';
 }
 
-export type ClientMessage = AudioMessage | PingMessage;
+export interface TtsStateMessage {
+  type: 'tts_state';
+  enabled: boolean;
+}
+
+export type ClientMessage = AudioMessage | PingMessage | TtsStateMessage;

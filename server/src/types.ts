@@ -19,8 +19,14 @@ export interface PingMessage {
   type: 'ping';
 }
 
+/** Client notifies TTS state change */
+export interface TtsStateMessage {
+  type: 'tts_state';
+  enabled: boolean;
+}
+
 /** All possible client messages */
-export type ClientMessage = AudioMessage | PingMessage;
+export type ClientMessage = AudioMessage | PingMessage | TtsStateMessage;
 
 /** Server sends transcript of user speech */
 export interface TranscriptMessage {
