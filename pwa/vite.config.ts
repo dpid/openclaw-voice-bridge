@@ -9,7 +9,7 @@ export default defineConfig({
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'ear-192.png', 'ear-512.png'],
+      includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'The Ear',
         short_name: 'The Ear',
@@ -22,17 +22,17 @@ export default defineConfig({
         start_url: process.env.GITHUB_ACTIONS ? '/the-ear/' : '/',
         icons: [
           {
-            src: 'ear-192.png',
+            src: 'icon-192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'ear-512.png',
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: 'ear-512.png',
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
