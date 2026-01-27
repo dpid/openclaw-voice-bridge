@@ -146,6 +146,10 @@ export class ProxyWebSocket {
     this.send({ type: 'tts_state', enabled });
   }
 
+  sendAuth(token: string): void {
+    this.send({ type: 'auth', token });
+  }
+
   isConnected(): boolean {
     return this.ws?.readyState === WebSocket.OPEN;
   }

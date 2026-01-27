@@ -69,6 +69,12 @@ export function loadConfig(): ProxyConfig {
     throw new Error(`Missing required config: ${missing.join(', ')}`);
   }
 
+  // Auth token for PWA connections (required!)
+  const authToken = process.env.EAR_AUTH_TOKEN || '';
+  if (!authToken) {
+    throw new Error('EAR_AUTH_TOKEN environment variable is required');
+  }
+
   const config: ProxyConfig = {
     port: parseInt(process.env.PORT || '3001', 10),
     groqApiKey,
@@ -77,6 +83,7 @@ export function loadConfig(): ProxyConfig {
     elevenLabsApiKey,
     elevenLabsVoiceId,
     sessionKey: process.env.SESSION_KEY || 'agent:main:main',  // Shared with CLI for seamless handoff
+    authToken,
   };
 
   console.log('✓ Configuration loaded');

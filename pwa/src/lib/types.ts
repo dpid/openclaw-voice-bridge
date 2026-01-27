@@ -69,4 +69,9 @@ export interface TtsStateMessage {
   enabled: boolean;
 }
 
-export type ClientMessage = AudioMessage | PingMessage | TtsStateMessage;
+export interface AuthMessage {
+  type: 'auth';
+  token: string;
+}
+
+export type ClientMessage = AudioMessage | PingMessage | TtsStateMessage | AuthMessage;

@@ -8,9 +8,11 @@
   import { VoiceActivityDetector, audioToWav } from './lib/vad';
   import type { AppState } from './lib/types';
 
-  // Configuration - uses env var in production, falls back to localhost for dev
+  // Configuration - uses env vars in production, falls back to localhost for dev
   const PROXY_URL = import.meta.env.VITE_PROXY_URL || 'ws://localhost:3001/ws';
+  const AUTH_TOKEN = import.meta.env.VITE_AUTH_TOKEN || '';
   const isProxyConfigured = !!import.meta.env.VITE_PROXY_URL;
+  const isAuthConfigured = !!import.meta.env.VITE_AUTH_TOKEN;
 
   // State
   let vad: VoiceActivityDetector | null = null;
@@ -43,7 +45,11 @@
       onConnect: () => {
         connected.set(true);
         console.log('[App] WebSocket connected');
-        // Send initial TTS state
+        // Authenticate first
+        if (AUTH_TOKEN) {
+          ws?.sendAuth(AUTH_TOKEN);
+        }
+        // Then send initial TTS state
         ws?.sendTtsState(ttsEnabled);
       },
       onDisconnect: () => {
@@ -261,9 +267,14 @@
     {/if}
     
     <!-- Demo mode notice -->
-    {#if !isProxyConfigured && currentState === 'idle'}
+    {#if (!isProxyConfigured || !isAuthConfigured) && currentState === 'idle'}
       <div class="demo-notice">
-        Demo Mode — proxy URL not configured.<br/>
+        {#if !isProxyConfigured}
+          Demo Mode — proxy URL not configured.<br/>
+        {/if}
+        {#if !isAuthConfigured}
+          ⚠️ Auth token not configured — connection will fail.<br/>
+        {/if}
         VAD and UI can be tested, but voice won't connect.
       </div>
     {/if}

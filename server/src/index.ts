@@ -219,20 +219,52 @@ async function generateAndStreamTTS(ws: WebSocket, text: string): Promise<void> 
   );
 }
 
-// Track TTS state per connection
+// Track state per connection
 const connectionTtsState = new WeakMap<WebSocket, boolean>();
+const connectionAuthed = new WeakMap<WebSocket, boolean>();
 
 wss.on('connection', (ws, req) => {
   const clientIp = req.socket.remoteAddress;
   console.log(`[WS] Client connected from ${clientIp}`);
   
-  // Default TTS to enabled
+  // Default states
   connectionTtsState.set(ws, true);
+  connectionAuthed.set(ws, false);
+  
+  // Auth timeout - close if not authenticated within 10 seconds
+  const authTimeout = setTimeout(() => {
+    if (!connectionAuthed.get(ws)) {
+      console.log(`[WS] Auth timeout for ${clientIp}, closing connection`);
+      sendMessage(ws, { type: 'error', message: 'Authentication timeout' });
+      ws.close();
+    }
+  }, 10000);
 
   ws.on('message', async (data) => {
     try {
       const msg = JSON.parse(data.toString()) as ClientMessage;
       
+      // Must authenticate first
+      if (!connectionAuthed.get(ws)) {
+        if (msg.type === 'auth') {
+          if (msg.token === config.authToken) {
+            connectionAuthed.set(ws, true);
+            clearTimeout(authTimeout);
+            console.log(`[WS] Client authenticated from ${clientIp}`);
+            sendMessage(ws, { type: 'status', state: 'transcribing' }); // Ack auth with any status
+          } else {
+            console.log(`[WS] Invalid auth token from ${clientIp}`);
+            sendMessage(ws, { type: 'error', message: 'Invalid token' });
+            ws.close();
+          }
+        } else {
+          console.log(`[WS] Unauthenticated message from ${clientIp}: ${msg.type}`);
+          sendMessage(ws, { type: 'error', message: 'Not authenticated' });
+        }
+        return;
+      }
+      
+      // Authenticated - process normally
       switch (msg.type) {
         case 'audio':
           await handleAudioMessage(ws, msg.data);
@@ -245,6 +277,10 @@ wss.on('connection', (ws, req) => {
         case 'tts_state':
           connectionTtsState.set(ws, msg.enabled);
           console.log(`[WS] TTS state changed: ${msg.enabled ? 'ON' : 'OFF'}`);
+          break;
+          
+        case 'auth':
+          // Already authenticated, ignore
           break;
           
         default:
@@ -260,6 +296,7 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('close', () => {
+    clearTimeout(authTimeout);
     console.log(`[WS] Client disconnected from ${clientIp}`);
   });
 

@@ -25,8 +25,14 @@ export interface TtsStateMessage {
   enabled: boolean;
 }
 
+/** Client authenticates with token */
+export interface AuthMessage {
+  type: 'auth';
+  token: string;
+}
+
 /** All possible client messages */
-export type ClientMessage = AudioMessage | PingMessage | TtsStateMessage;
+export type ClientMessage = AudioMessage | PingMessage | TtsStateMessage | AuthMessage;
 
 /** Server sends transcript of user speech */
 export interface TranscriptMessage {
@@ -137,6 +143,7 @@ export interface ProxyConfig {
   elevenLabsApiKey: string;
   elevenLabsVoiceId: string;
   sessionKey: string;
+  authToken: string;  // Required token for PWA connections
 }
 
 // ============================================================
