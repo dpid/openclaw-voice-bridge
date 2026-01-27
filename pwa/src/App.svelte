@@ -273,6 +273,13 @@
 </script>
 
 <main class={getStateClass(currentState)}>
+  <!-- Token settings button (top right) -->
+  {#if authToken && !showAuthPrompt}
+    <button class="btn-token-settings" onclick={clearAuthToken} title="Change token">
+      🔓
+    </button>
+  {/if}
+  
   <div class="container">
     <!-- Status Indicator -->
     <div class="indicator">
@@ -350,9 +357,6 @@
       {#if currentState === 'idle' && !showAuthPrompt}
         <button class="btn start" onclick={startSession}>
           Start Session
-        </button>
-        <button class="btn-logout" onclick={clearAuthToken} title="Change token">
-          🔓
         </button>
       {:else}
         <!-- Mute toggles -->
@@ -695,18 +699,28 @@
     color: #5c8;
   }
 
-  .btn-logout {
+  .btn-token-settings {
+    position: fixed;
+    top: 16px;
+    right: 16px;
     background: transparent;
     border: none;
     font-size: 20px;
     cursor: pointer;
-    opacity: 0.5;
-    margin-left: 16px;
+    opacity: 0.4;
     padding: 8px;
+    z-index: 100;
   }
 
-  .btn-logout:hover {
+  .btn-token-settings:hover {
     opacity: 1;
+  }
+  
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .btn-token-settings {
+      top: calc(16px + env(safe-area-inset-top));
+      right: calc(16px + env(safe-area-inset-right));
+    }
   }
 
   /* Safe area for notched devices */
