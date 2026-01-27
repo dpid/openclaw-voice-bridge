@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="spiral" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd700"/>
+      <stop offset="50%" stop-color="#ffaa00"/>
+      <stop offset="100%" stop-color="#ff8c00"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Solid square background (no transparency) -->
+  <rect x="0" y="0" width="180" height="180" fill="#1a1a2e"/>
+  
+  <!-- Stars -->
+  <circle cx="35" cy="40" r="3" fill="#ffd700" opacity="0.9"/>
+  <circle cx="145" cy="35" r="2.5" fill="#ffd700" opacity="0.8"/>
+  <circle cx="150" cy="135" r="2.5" fill="#ffd700" opacity="0.7"/>
+  <circle cx="30" cy="130" r="2" fill="#ffd700" opacity="0.8"/>
+  <circle cx="50" cy="150" r="2" fill="#ffd700" opacity="0.6"/>
+  <circle cx="135" cy="55" r="2" fill="#ffd700" opacity="0.7"/>
+  
+  <!-- Spiral (centered and scaled) -->
+  <g transform="translate(90,90) scale(0.28) translate(-256,-256)" fill="none" stroke="url(#spiral)" stroke-width="22" stroke-linecap="round">
+    <path d="M256,256 
+             Q276,256 280,240 
+             Q290,210 260,200 
+             Q210,185 200,240 
+             Q185,310 256,320 
+             Q340,335 360,256 
+             Q380,160 256,140 
+             Q130,120 100,256 
+             Q75,410 256,440
+             Q460,475 490,256" 
+          opacity="0.95"/>
+  </g>
+  
+  <!-- Center glow -->
+  <circle cx="90" cy="90" r="6" fill="#ffd700" opacity="0.3"/>
+  <circle cx="90" cy="90" r="3" fill="#ffd700" opacity="0.5"/>
+</svg>
