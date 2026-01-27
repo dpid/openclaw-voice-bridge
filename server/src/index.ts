@@ -121,6 +121,7 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     
     if (!transcript.trim()) {
       console.log('[Pipeline] Empty transcript, ignoring');
+      sendMessage(ws, { type: 'audio_end' }); // Reset client state
       return;
     }
     
@@ -136,6 +137,7 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     const normalized = transcript.trim().toLowerCase().replace(/[.!?,]/g, '');
     if (hallucinations.includes(normalized)) {
       console.log(`[Pipeline] Filtered hallucination: "${transcript}"`);
+      sendMessage(ws, { type: 'audio_end' }); // Reset client state
       return;
     }
     
@@ -202,6 +204,7 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     const message = err instanceof Error ? err.message : String(err);
     console.error('[Pipeline] Error:', message);
     sendMessage(ws, { type: 'error', message });
+    sendMessage(ws, { type: 'audio_end' }); // Reset client state
   }
 }
 
