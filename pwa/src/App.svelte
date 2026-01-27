@@ -355,7 +355,7 @@
   <div class="container">
     <!-- Status Indicator -->
     <div class="indicator">
-      <ParticleHead state={currentState} size={120} />
+      <ParticleHead appState={currentState} size={120} />
     </div>
     
     <!-- State Text -->

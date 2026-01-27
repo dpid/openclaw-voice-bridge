@@ -12,10 +12,10 @@
 
   // Props
   interface Props {
-    state?: AppState;
+    appState?: AppState;
     size?: number;
   }
-  let { state = 'idle', size = 120 }: Props = $props();
+  let { appState = 'idle', size = 120 }: Props = $props();
 
   // State-based animation parameters
   const stateParams: Record<AppState, { rotateSpeed: number; animSpeed: number; bloomStrength: number }> = {
@@ -32,7 +32,7 @@
     0x7c3aed, 0xa78bfa, 0xc4b5fd, 0x818cf8, 0x60a5fa, 0xffffff,
   ].map((c) => new THREE.Color(c));
 
-  let container: HTMLDivElement;
+  let container: HTMLDivElement | null = $state(null);
   let animationId: number;
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
@@ -42,7 +42,7 @@
   let clock: THREE.Clock;
   let material: THREE.ShaderMaterial;
   let points: THREE.Points;
-  let loadError = $state(false);
+  let loadError: boolean = $state(false);
 
   // Current interpolated values
   let currentRotateSpeed = stateParams.idle.rotateSpeed;
@@ -62,7 +62,7 @@
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(size, size);
-    container.appendChild(renderer.domElement);
+    container!.appendChild(renderer.domElement);
 
     // Post-processing
     composer = new EffectComposer(renderer);
@@ -136,7 +136,7 @@
     const elapsed = clock.getElapsedTime();
 
     // Interpolate towards target values
-    const targetParams = stateParams[state];
+    const targetParams = stateParams[appState];
     const lerpFactor = 0.05;
     currentRotateSpeed += (targetParams.rotateSpeed - currentRotateSpeed) * lerpFactor;
     currentAnimSpeed += (targetParams.animSpeed - currentAnimSpeed) * lerpFactor;
