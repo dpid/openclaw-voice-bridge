@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+</head>
+<body>
+  <h1>PWA Icon Generator</h1>
+  <p>Right-click and save each icon:</p>
+  <div>
+    <h3>192x192</h3>
+    <canvas id="icon192" width="192" height="192"></canvas>
+    <br><a id="link192" download="ear-192.png">Download 192x192</a>
+  </div>
+  <div>
+    <h3>512x512</h3>
+    <canvas id="icon512" width="512" height="512"></canvas>
+    <br><a id="link512" download="ear-512.png">Download 512x512</a>
+  </div>
+
+  <script>
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Ear emoji
+      ctx.font = `${size * 0.6}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('👂', size / 2, size / 2 + size * 0.05);
+    }
+
+    const canvas192 = document.getElementById('icon192');
+    const canvas512 = document.getElementById('icon512');
+    
+    drawIcon(canvas192, 192);
+    drawIcon(canvas512, 512);
+    
+    document.getElementById('link192').href = canvas192.toDataURL('image/png');
+    document.getElementById('link512').href = canvas512.toDataURL('image/png');
+  </script>
+</body>
+</html>
