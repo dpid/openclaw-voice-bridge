@@ -45,7 +45,7 @@
   // Strip transcript echo from response (already shown separately in PWA)
   // Matches: > 🎤 "..." or > 📖 "..." at start of response
   function stripTranscriptEcho(text: string): string {
-    return text.replace(/^>\s*[🎤📖]\s*"[^"]*"\s*\n*/m, '').trim();
+    return text.replace(/^>\s*(?:🎤|📖)\s*"[^"]*"\s*\n*/m, '').trim();
   }
   
   // Reactive filtered response
