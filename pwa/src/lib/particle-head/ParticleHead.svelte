@@ -54,9 +54,9 @@
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0a14);
 
-    // Camera - closer for compact view
+    // Camera - pulled back to see full head
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 0, 28);
+    camera.position.set(0, 0, 38);
 
     // Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -252,12 +252,7 @@
 
 <style>
   .particle-head {
-    border-radius: 50%;
-    overflow: hidden;
-  }
-
-  .particle-head :global(canvas) {
-    border-radius: 50%;
+    /* No mask for now - debug visibility */
   }
 
   .fallback {
