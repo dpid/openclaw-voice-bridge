@@ -7,6 +7,7 @@
   import { WakeLock } from './lib/wakelock';
   import { VoiceActivityDetector, audioToWav } from './lib/vad';
   import { marked } from 'marked';
+  import ParticleHead from './lib/particle-head/ParticleHead.svelte';
   import type { AppState } from './lib/types';
   
   // Configure marked for safe rendering
@@ -354,7 +355,7 @@
   <div class="container">
     <!-- Status Indicator -->
     <div class="indicator">
-      <div class="icon">🌀</div>
+      <ParticleHead state={currentState} size={120} />
     </div>
     
     <!-- State Text -->
@@ -465,7 +466,7 @@
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #1a1a2e;
+    background: #0a0a14;
     color: #eee;
     min-height: 100vh;
     min-height: 100dvh;
@@ -496,89 +497,33 @@
   /* Indicator */
   .indicator {
     margin-bottom: 24px;
-  }
-
-  .icon {
-    font-size: 80px;
-    animation: pulse 2s ease-in-out infinite;
+    display: flex;
+    justify-content: center;
   }
 
   /* State-based backgrounds */
   .state-idle {
-    background: #1a1a2e;
+    background: #0a0a14;
   }
 
   .state-listening {
-    background: #1a2a3e;
+    background: #0a0a14;
   }
 
   .state-recording {
-    background: #2a1a3e;
+    background: #0f0a18;
   }
 
   .state-processing {
-    background: #1a3a3e;
+    background: #0a0f14;
   }
 
   .state-speaking {
-    background: #2a3a1e;
+    background: #0a100a;
   }
 
   .state-error {
-    background: #3a1a1e;
-  }
-
-  /* State-based animations */
-  .state-idle .icon {
-    animation: none;
-    opacity: 0.6;
-  }
-
-  .state-listening .icon {
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  .state-recording .icon {
-    animation: bounce 0.5s ease-in-out infinite;
-  }
-
-  .state-processing .icon {
-    animation: spin 1s linear infinite;
-  }
-
-  .state-speaking .icon {
-    animation: wave 0.5s ease-in-out infinite;
-  }
-
-  .state-error .icon {
-    animation: shake 0.5s ease-in-out;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.05); opacity: 1; }
-  }
-
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes wave {
-    0%, 100% { transform: scale(1); }
-    25% { transform: scale(1.1) rotate(-5deg); }
-    75% { transform: scale(1.1) rotate(5deg); }
-  }
-
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+    background: #140a0a;
   }
 
   /* Status text */
