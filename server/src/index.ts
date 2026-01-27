@@ -146,7 +146,8 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     console.log('[Pipeline] Sending to gateway...');
     sendMessage(ws, { type: 'status', state: 'thinking' });
     
-    const response = await sendToGateway(transcript);
+    // Prefix with 🎤 so Vincent knows this is a voice message
+    const response = await sendToGateway(`🎤 ${transcript}`);
     console.log(`[Pipeline] Response: "${response.text.slice(0, 100)}..." mediaUrls:`, response.mediaUrls);
     
     // Send response text to client (use text if available, or a placeholder)
