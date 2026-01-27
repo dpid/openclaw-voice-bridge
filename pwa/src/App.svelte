@@ -42,6 +42,15 @@
   errorMessage.subscribe(v => currentError = v);
   connected.subscribe(v => isConnected = v);
 
+  // Strip transcript echo from response (already shown separately in PWA)
+  // Matches: > 🎤 "..." or > 📖 "..." at start of response
+  function stripTranscriptEcho(text: string): string {
+    return text.replace(/^>\s*[🎤📖]\s*"[^"]*"\s*\n*/m, '').trim();
+  }
+  
+  // Reactive filtered response
+  $: displayResponse = stripTranscriptEcho(currentResponse);
+
   // Initialize WebSocket with handlers
   function initWebSocket(): void {
     ws = new ProxyWebSocket(PROXY_URL, {
@@ -322,10 +331,10 @@
     {/if}
     
     <!-- Response -->
-    {#if currentResponse}
+    {#if displayResponse}
       <div class="response">
         <span class="label">Vincent:</span>
-        <span class="text">{currentResponse}</span>
+        <span class="text">{displayResponse}</span>
       </div>
     {/if}
     
