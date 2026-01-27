@@ -35,6 +35,19 @@
   let micMuted = false;   // Mute Me - stops sending audio
   let ttsEnabled = true;  // Mute You - stops TTS playback
 
+  // Chat history
+  interface ChatMessage {
+    id: number;
+    role: 'user' | 'assistant';
+    text: string;
+    html?: string;
+  }
+  let messages: ChatMessage[] = [];
+  let messageIdCounter = 0;
+  let chatContainer: HTMLElement;
+  let pendingUserMessageId: number | null = null;
+  let pendingAssistantMessageId: number | null = null;
+
   // Reactive state from stores
   let currentState: AppState = 'idle';
   let currentTranscript = '';
@@ -44,8 +57,44 @@
 
   // Subscribe to stores
   appState.subscribe(v => currentState = v);
-  transcript.subscribe(v => currentTranscript = v);
-  response.subscribe(v => currentResponse = v);
+  transcript.subscribe(v => {
+    currentTranscript = v;
+    if (v) {
+      // Add or update user message
+      if (pendingUserMessageId !== null) {
+        const idx = messages.findIndex(m => m.id === pendingUserMessageId);
+        if (idx >= 0) messages[idx].text = v;
+      } else {
+        pendingUserMessageId = ++messageIdCounter;
+        messages = [...messages, { id: pendingUserMessageId, role: 'user', text: v }];
+      }
+      scrollToBottom();
+    }
+  });
+  response.subscribe(v => {
+    currentResponse = v;
+    const stripped = stripTranscriptEcho(v);
+    if (stripped) {
+      const html = marked.parse(stripped) as string;
+      // Finalize user message if pending
+      if (pendingUserMessageId !== null) {
+        pendingUserMessageId = null;
+      }
+      // Add or update assistant message
+      if (pendingAssistantMessageId !== null) {
+        const idx = messages.findIndex(m => m.id === pendingAssistantMessageId);
+        if (idx >= 0) {
+          messages[idx].text = stripped;
+          messages[idx].html = html;
+          messages = [...messages]; // trigger reactivity
+        }
+      } else {
+        pendingAssistantMessageId = ++messageIdCounter;
+        messages = [...messages, { id: pendingAssistantMessageId, role: 'assistant', text: stripped, html }];
+      }
+      scrollToBottom();
+    }
+  });
   errorMessage.subscribe(v => currentError = v);
   connected.subscribe(v => isConnected = v);
 
@@ -55,9 +104,19 @@
     return text.replace(/^>\s*(?:🎤|📖)\s*"[^"]*"\s*\n*/m, '').trim();
   }
   
-  // Reactive filtered response with markdown parsing
-  $: displayResponse = stripTranscriptEcho(currentResponse);
-  $: displayResponseHtml = displayResponse ? marked.parse(displayResponse) : '';
+  function scrollToBottom(): void {
+    setTimeout(() => {
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }, 50);
+  }
+  
+  // Reset pending message trackers when response cycle completes
+  function resetPendingMessages(): void {
+    pendingUserMessageId = null;
+    pendingAssistantMessageId = null;
+  }
 
   // Initialize WebSocket with handlers
   function initWebSocket(): void {
@@ -86,6 +145,8 @@
         player?.addChunk(base64);
       },
       onAudioEnd: () => {
+        // Response complete - reset pending trackers
+        resetPendingMessages();
         if (ttsEnabled) {
           appState.set('speaking');
           player?.play();
@@ -198,6 +259,8 @@
       transcript.set('');
       response.set('');
       errorMessage.set('');
+      // Don't clear messages - keep chat history across reconnects
+      resetPendingMessages();
       
       // Acquire wake lock
       wakeLock = new WakeLock();
@@ -337,19 +400,18 @@
       </div>
     {/if}
     
-    <!-- Transcript -->
-    {#if currentTranscript}
-      <div class="transcript">
-        <span class="label">You:</span>
-        <span class="text">{currentTranscript}</span>
-      </div>
-    {/if}
-    
-    <!-- Response -->
-    {#if displayResponse}
-      <div class="response">
-        <span class="label">Vincent:</span>
-        <div class="text markdown">{@html displayResponseHtml}</div>
+    <!-- Chat History -->
+    {#if messages.length > 0}
+      <div class="chat-container" bind:this={chatContainer}>
+        {#each messages as msg (msg.id)}
+          <div class="chat-bubble {msg.role}">
+            {#if msg.role === 'assistant' && msg.html}
+              <div class="markdown">{@html msg.html}</div>
+            {:else}
+              {msg.text}
+            {/if}
+          </div>
+        {/each}
       </div>
     {/if}
     
@@ -550,31 +612,41 @@
     line-height: 1.4;
   }
 
-  /* Transcript and Response */
-  .transcript, .response {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
+  /* Chat Container */
+  .chat-container {
+    max-height: 40vh;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-bubble {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+
+  .chat-bubble.user {
+    align-self: flex-end;
+    background: rgba(100, 150, 255, 0.25);
+    border-bottom-right-radius: 4px;
+    color: #ddd;
     text-align: left;
   }
 
-  .label {
-    display: block;
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 4px;
-    text-transform: uppercase;
-  }
-
-  .text {
-    font-size: 16px;
-    line-height: 1.4;
+  .chat-bubble.assistant {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom-left-radius: 4px;
     color: #ddd;
-  }
-
-  .response .label {
-    color: #7af;
+    text-align: left;
   }
 
   /* Markdown styles */
