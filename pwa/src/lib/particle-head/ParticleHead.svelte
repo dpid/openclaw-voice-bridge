@@ -42,6 +42,7 @@
   let clock: THREE.Clock;
   let material: THREE.ShaderMaterial;
   let points: THREE.Points;
+  let loadError = $state(false);
 
   // Current interpolated values
   let currentRotateSpeed = stateParams.idle.rotateSpeed;
@@ -225,7 +226,10 @@
   }
 
   onMount(() => {
-    init().catch(console.error);
+    init().catch((err) => {
+      console.error('[ParticleHead] Failed to initialize:', err);
+      loadError = true;
+    });
   });
 
   onDestroy(() => {
@@ -233,11 +237,17 @@
   });
 </script>
 
-<div
-  bind:this={container}
-  class="particle-head"
-  style="width: {size}px; height: {size}px;"
-></div>
+{#if loadError}
+  <div class="fallback" style="width: {size}px; height: {size}px;">
+    🌀
+  </div>
+{:else}
+  <div
+    bind:this={container}
+    class="particle-head"
+    style="width: {size}px; height: {size}px;"
+  ></div>
+{/if}
 
 <style>
   .particle-head {
@@ -246,6 +256,15 @@
   }
 
   .particle-head :global(canvas) {
+    border-radius: 50%;
+  }
+
+  .fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    background: rgba(10, 10, 20, 0.5);
     border-radius: 50%;
   }
 </style>
