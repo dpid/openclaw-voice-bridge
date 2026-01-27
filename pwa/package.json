@@ -19,9 +19,7 @@
   },
   "dependencies": {
     "@ricky0123/vad-web": "^0.0.18",
-    "@types/three": "^0.182.0",
     "marked": "^15.0.6",
-    "onnxruntime-web": "^1.14.0",
-    "three": "^0.182.0"
+    "onnxruntime-web": "^1.14.0"
   }
 }
