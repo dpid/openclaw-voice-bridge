@@ -17,14 +17,14 @@
   }
   let { appState = 'idle', size = 120 }: Props = $props();
 
-  // State-based animation parameters
+  // State-based animation parameters (bloom reduced significantly)
   const stateParams: Record<AppState, { rotateSpeed: number; animSpeed: number; bloomStrength: number }> = {
-    idle: { rotateSpeed: 0.2, animSpeed: 0.15, bloomStrength: 0.4 },
-    listening: { rotateSpeed: 0.4, animSpeed: 0.2, bloomStrength: 0.6 },
-    recording: { rotateSpeed: 0.8, animSpeed: 0.5, bloomStrength: 0.9 },
-    processing: { rotateSpeed: 1.5, animSpeed: 0.8, bloomStrength: 1.0 },
-    speaking: { rotateSpeed: 0.6, animSpeed: 0.35, bloomStrength: 0.8 },
-    error: { rotateSpeed: 0.1, animSpeed: 0.1, bloomStrength: 0.3 },
+    idle: { rotateSpeed: 0.2, animSpeed: 0.15, bloomStrength: 0.15 },
+    listening: { rotateSpeed: 0.4, animSpeed: 0.2, bloomStrength: 0.2 },
+    recording: { rotateSpeed: 0.8, animSpeed: 0.5, bloomStrength: 0.3 },
+    processing: { rotateSpeed: 1.5, animSpeed: 0.8, bloomStrength: 0.35 },
+    speaking: { rotateSpeed: 0.6, animSpeed: 0.35, bloomStrength: 0.25 },
+    error: { rotateSpeed: 0.1, animSpeed: 0.1, bloomStrength: 0.1 },
   };
 
   // Palette
@@ -50,28 +50,29 @@
   let currentBloomStrength = stateParams.idle.bloomStrength;
 
   async function init() {
-    // Scene
+    // Scene - transparent background to blend with page
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a14);
+    scene.background = null;
 
     // Camera - pulled back to see full head
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     camera.position.set(0, 0, 38);
 
-    // Renderer
+    // Renderer - alpha for transparent background
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(size, size);
     container!.appendChild(renderer.domElement);
 
-    // Post-processing
+    // Post-processing - reduced bloom radius and higher threshold
     composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
     bloomPass = new UnrealBloomPass(
       new THREE.Vector2(size, size),
       stateParams.idle.bloomStrength,
-      0.4,
-      0.2
+      0.2,  // radius (was 0.4)
+      0.5   // threshold (was 0.2) - higher = less bloom
     );
     composer.addPass(bloomPass);
     composer.addPass(new OutputPass());
