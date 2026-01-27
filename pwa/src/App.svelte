@@ -6,7 +6,14 @@
   import { AudioPlayer } from './lib/audio';
   import { WakeLock } from './lib/wakelock';
   import { VoiceActivityDetector, audioToWav } from './lib/vad';
+  import { marked } from 'marked';
   import type { AppState } from './lib/types';
+  
+  // Configure marked for safe rendering
+  marked.setOptions({
+    breaks: true,  // Convert \n to <br>
+    gfm: true,     // GitHub Flavored Markdown
+  });
 
   // Configuration - uses env vars in production, falls back to localhost for dev
   const PROXY_URL = import.meta.env.VITE_PROXY_URL || 'ws://localhost:3001/ws';
@@ -48,8 +55,9 @@
     return text.replace(/^>\s*(?:🎤|📖)\s*"[^"]*"\s*\n*/m, '').trim();
   }
   
-  // Reactive filtered response
+  // Reactive filtered response with markdown parsing
   $: displayResponse = stripTranscriptEcho(currentResponse);
+  $: displayResponseHtml = displayResponse ? marked.parse(displayResponse) : '';
 
   // Initialize WebSocket with handlers
   function initWebSocket(): void {
@@ -341,7 +349,7 @@
     {#if displayResponse}
       <div class="response">
         <span class="label">Vincent:</span>
-        <span class="text">{displayResponse}</span>
+        <div class="text markdown">{@html displayResponseHtml}</div>
       </div>
     {/if}
     
@@ -567,6 +575,97 @@
 
   .response .label {
     color: #7af;
+  }
+
+  /* Markdown styles */
+  .markdown {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #ddd;
+  }
+
+  .markdown :global(p) {
+    margin: 0 0 12px 0;
+  }
+
+  .markdown :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .markdown :global(h1),
+  .markdown :global(h2),
+  .markdown :global(h3),
+  .markdown :global(h4) {
+    color: #fff;
+    margin: 16px 0 8px 0;
+    font-weight: 600;
+  }
+
+  .markdown :global(h1) { font-size: 1.4em; }
+  .markdown :global(h2) { font-size: 1.2em; }
+  .markdown :global(h3) { font-size: 1.1em; }
+  .markdown :global(h4) { font-size: 1em; }
+
+  .markdown :global(ul),
+  .markdown :global(ol) {
+    margin: 8px 0;
+    padding-left: 24px;
+  }
+
+  .markdown :global(li) {
+    margin: 4px 0;
+  }
+
+  .markdown :global(code) {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 0.9em;
+  }
+
+  .markdown :global(pre) {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+
+  .markdown :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .markdown :global(blockquote) {
+    border-left: 3px solid #7af;
+    margin: 12px 0;
+    padding-left: 12px;
+    color: #aaa;
+  }
+
+  .markdown :global(a) {
+    color: #7af;
+    text-decoration: none;
+  }
+
+  .markdown :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .markdown :global(strong) {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .markdown :global(em) {
+    font-style: italic;
+  }
+
+  .markdown :global(hr) {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 16px 0;
   }
 
   /* Error */
