@@ -10,9 +10,12 @@
 
   // Configuration - uses env vars in production, falls back to localhost for dev
   const PROXY_URL = import.meta.env.VITE_PROXY_URL || 'ws://localhost:3001/ws';
-  const AUTH_TOKEN = import.meta.env.VITE_AUTH_TOKEN || '';
   const isProxyConfigured = !!import.meta.env.VITE_PROXY_URL;
-  const isAuthConfigured = !!import.meta.env.VITE_AUTH_TOKEN;
+  
+  // Auth token from localStorage (user enters once)
+  const AUTH_STORAGE_KEY = 'ear_auth_token';
+  let authToken = localStorage.getItem(AUTH_STORAGE_KEY) || '';
+  let showAuthPrompt = !authToken;
 
   // State
   let vad: VoiceActivityDetector | null = null;
@@ -46,8 +49,8 @@
         connected.set(true);
         console.log('[App] WebSocket connected');
         // Authenticate first
-        if (AUTH_TOKEN) {
-          ws?.sendAuth(AUTH_TOKEN);
+        if (authToken) {
+          ws?.sendAuth(authToken);
         }
         // Then send initial TTS state
         ws?.sendTtsState(ttsEnabled);
@@ -145,6 +148,25 @@
     }
     // Notify server of TTS state change
     ws?.sendTtsState(ttsEnabled);
+  }
+  
+  // Auth token management
+  let tokenInput = '';
+  
+  function saveAuthToken(): void {
+    if (tokenInput.trim()) {
+      authToken = tokenInput.trim();
+      localStorage.setItem(AUTH_STORAGE_KEY, authToken);
+      showAuthPrompt = false;
+      tokenInput = '';
+    }
+  }
+  
+  function clearAuthToken(): void {
+    authToken = '';
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    showAuthPrompt = true;
+    endSession();
   }
 
   // Start session
@@ -266,15 +288,27 @@
       </div>
     {/if}
     
+    <!-- Auth prompt -->
+    {#if showAuthPrompt}
+      <div class="auth-prompt">
+        <div class="auth-title">🔐 Enter Access Token</div>
+        <input 
+          type="password" 
+          class="auth-input" 
+          placeholder="Token"
+          bind:value={tokenInput}
+          onkeydown={(e) => e.key === 'Enter' && saveAuthToken()}
+        />
+        <button class="btn auth-btn" onclick={saveAuthToken}>
+          Unlock
+        </button>
+      </div>
+    {/if}
+    
     <!-- Demo mode notice -->
-    {#if (!isProxyConfigured || !isAuthConfigured) && currentState === 'idle'}
+    {#if !isProxyConfigured && currentState === 'idle' && !showAuthPrompt}
       <div class="demo-notice">
-        {#if !isProxyConfigured}
-          Demo Mode — proxy URL not configured.<br/>
-        {/if}
-        {#if !isAuthConfigured}
-          ⚠️ Auth token not configured — connection will fail.<br/>
-        {/if}
+        Demo Mode — proxy URL not configured.<br/>
         VAD and UI can be tested, but voice won't connect.
       </div>
     {/if}
@@ -304,9 +338,12 @@
     
     <!-- Controls -->
     <div class="controls">
-      {#if currentState === 'idle'}
+      {#if currentState === 'idle' && !showAuthPrompt}
         <button class="btn start" onclick={startSession}>
           Start Session
+        </button>
+        <button class="btn-logout" onclick={clearAuthToken} title="Change token">
+          🔓
         </button>
       {:else}
         <!-- Mute toggles -->
@@ -609,6 +646,58 @@
     font-size: 11px;
     text-transform: uppercase;
     opacity: 0.7;
+  }
+
+  /* Auth prompt */
+  .auth-prompt {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .auth-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .auth-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+
+  .auth-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .auth-btn {
+    width: 100%;
+    background: rgba(80, 200, 120, 0.2);
+    border-color: rgba(80, 200, 120, 0.5);
+    color: #5c8;
+  }
+
+  .btn-logout {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.5;
+    margin-left: 16px;
+    padding: 8px;
+  }
+
+  .btn-logout:hover {
+    opacity: 1;
   }
 
   /* Safe area for notched devices */
