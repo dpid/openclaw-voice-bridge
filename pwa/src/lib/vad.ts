@@ -66,11 +66,11 @@ export class VoiceActivityDetector {
           this.options.onSpeechEnd(audio);
         },
         // Model options
-        positiveSpeechThreshold: 0.8,
-        negativeSpeechThreshold: 0.5,
-        redemptionFrames: 8,
+        positiveSpeechThreshold: 0.7,   // Slightly more sensitive to start
+        negativeSpeechThreshold: 0.4,   // More lenient to keep going
+        redemptionFrames: 24,           // ~2.3 seconds pause tolerance (was 768ms)
         minSpeechFrames: 3,
-        preSpeechPadFrames: 5,
+        preSpeechPadFrames: 10,         // Capture more lead-in audio
       });
 
       this.vad.start();
