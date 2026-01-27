@@ -78,8 +78,9 @@
 
     clock = new THREE.Clock();
 
-    // Load particles
-    const positions = await loadModelPositions('/models/head.gltf');
+    // Load particles - use Vite's base URL for correct path on GitHub Pages
+    const modelPath = `${import.meta.env.BASE_URL}models/head.gltf`;
+    const positions = await loadModelPositions(modelPath);
     const particleCount = positions.length / 3;
 
     const geometry = new THREE.BufferGeometry();
