@@ -231,8 +231,18 @@
   // Toggle mic mute
   function toggleMicMute(): void {
     micMuted = !micMuted;
-    if (micMuted && currentState === 'recording') {
-      appState.set('listening');
+    if (micMuted) {
+      // Muting: if recording, cancel current recording and reset VAD
+      if (currentState === 'recording') {
+        vad?.pause();
+        vad?.resume();  // Reset VAD state
+        appState.set('listening');
+      }
+    } else {
+      // Unmuting: ensure VAD is running if in listening state
+      if (currentState === 'listening' && sessionActive) {
+        vad?.resume();
+      }
     }
   }
   
