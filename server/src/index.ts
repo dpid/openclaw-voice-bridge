@@ -219,8 +219,12 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
         .replace(/[\u{200D}]/gu, '')            // zero-width joiner
         .trim();
       
-      console.log(`[Pipeline] Speaking (own TTS): "${spokenText.slice(0, 100)}..."`);
-      await generateAndStreamTTS(ws, spokenText);
+      if (spokenText) {
+        console.log(`[Pipeline] Speaking (own TTS): "${spokenText.slice(0, 100)}..."`);
+        await generateAndStreamTTS(ws, spokenText);
+      } else {
+        console.log('[Pipeline] No text to speak after stripping');
+      }
     } else if (response.mediaUrls && response.mediaUrls.length > 0) {
       // No text but gateway generated audio - use that
       const audioPath = response.mediaUrls[0];
