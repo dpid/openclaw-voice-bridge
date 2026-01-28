@@ -146,9 +146,29 @@ To configure your assistant, send this message to your Moltbot:
 
 ## Deployment
 
-The PWA is deployed to GitHub Pages at https://dpid.github.io/moltbot-voice-bridge/
+### PWA (Frontend)
 
-The proxy server runs locally and is exposed via cloudflared tunnel.
+**GitHub Pages** (easiest):
+```bash
+# Fork the repo, enable GitHub Pages on main branch
+# PWA auto-deploys via GitHub Actions
+```
+
+**Self-hosted**: Serve the `pwa/dist/` folder from any static host (Netlify, Vercel, Cloudflare Pages, etc.)
+
+### Proxy Server (Backend)
+
+The proxy must be accessible from wherever you use the PWA.
+
+**Local + Tunnel** (recommended for personal use):
+```bash
+cd server && npm start
+cloudflared tunnel --url http://localhost:3001
+```
+
+**VPS/Cloud**: Run the server on any Node.js host. Set `VITE_PROXY_URL` when building the PWA to point to your server.
+
+**Same machine**: If PWA and proxy run on the same host, the default `ws://localhost:3001/ws` works.
 
 ## License
 
