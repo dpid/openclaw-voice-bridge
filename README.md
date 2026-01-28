@@ -166,6 +166,32 @@ cd server && npm start
 cloudflared tunnel --url http://localhost:3001
 ```
 
+**Auto-start on boot** (Linux/systemd):
+```bash
+# Create service file
+sudo tee /etc/systemd/system/moltbot-voice-bridge.service << EOF
+[Unit]
+Description=Moltbot Voice Bridge Proxy Server
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$(pwd)/server
+ExecStart=$(which node) --env-file=.env dist/index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start
+sudo systemctl daemon-reload
+sudo systemctl enable moltbot-voice-bridge
+sudo systemctl start moltbot-voice-bridge
+```
+
 **VPS/Cloud**: Run the server on any Node.js host. Set `VITE_PROXY_URL` when building the PWA to point to your server.
 
 **Same machine**: If PWA and proxy run on the same host, the default `ws://localhost:3001/ws` works.
