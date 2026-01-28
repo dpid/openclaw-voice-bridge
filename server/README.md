@@ -49,6 +49,9 @@ npm start
 | `PORT` | No | Server port (default: `3001`) |
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox TTS URL (e.g., `http://localhost:8880`) |
+| `CHATTERBOX_VOICE` | No | Chatterbox voice name (default: `default`) |
+| `ASSISTANT_NAME` | No | Assistant name for branding (default: `Moltbot`) |
+| `ASSISTANT_EMOJI` | No | Emoji for branding (default: `🦞`) |
 
 ### Moltbot Config
 
@@ -129,6 +132,15 @@ Health check endpoint.
 ```bash
 curl http://localhost:3001/health
 # {"status":"ok","gateway":true}
+```
+
+### HTTP `/branding`
+
+Returns branding configuration for the PWA.
+
+```bash
+curl http://localhost:3001/branding
+# {"name":"Moltbot","emoji":"🦞","description":"Hands-free voice interface for Moltbot"}
 ```
 
 ## Testing

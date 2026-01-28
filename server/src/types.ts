@@ -144,6 +144,9 @@ export interface ProxyConfig {
   elevenLabsVoiceId: string;
   sessionKey: string;
   authToken: string;  // Required token for PWA connections
+  // Branding
+  assistantName: string;
+  assistantEmoji: string;
 }
 
 // ============================================================

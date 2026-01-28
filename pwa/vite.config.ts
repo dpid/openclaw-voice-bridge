@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         name: 'The Ear',
         short_name: 'The Ear',
-        description: 'Voice-first conversation with Vincent',
+        description: 'Hands-free voice interface for Moltbot',
         theme_color: '#1a1a2e',
         background_color: '#1a1a2e',
         display: 'standalone',

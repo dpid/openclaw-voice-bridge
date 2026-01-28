@@ -1,7 +1,7 @@
 {
   "name": "the-ear",
   "version": "1.0.0",
-  "description": "Voice PWA for hands-free conversation with Vincent",
+  "description": "Hands-free voice interface for Moltbot",
   "type": "module",
   "scripts": {
     "dev": "node node_modules/vite/bin/vite.js --host",

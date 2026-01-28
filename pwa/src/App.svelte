@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { appState, transcript, response, errorMessage, connected } from './lib/stores';
+  import { appState, transcript, response, errorMessage, connected, branding, type Branding } from './lib/stores';
   import { unlockAudioContext } from './lib/audio';
   import { ProxyWebSocket } from './lib/websocket';
   import { AudioPlayer } from './lib/audio';
@@ -54,6 +54,7 @@
   let currentResponse = '';
   let currentError = '';
   let isConnected = false;
+  let currentBranding: Branding = { name: 'Moltbot', emoji: '🦞', description: 'Hands-free voice interface for Moltbot' };
 
   // Subscribe to stores
   appState.subscribe(v => currentState = v);
@@ -97,6 +98,23 @@
   });
   errorMessage.subscribe(v => currentError = v);
   connected.subscribe(v => isConnected = v);
+  branding.subscribe(v => currentBranding = v);
+
+  // Fetch branding from server
+  async function fetchBranding(): Promise<void> {
+    try {
+      // Derive HTTP URL from WebSocket URL
+      const httpUrl = PROXY_URL.replace(/^ws/, 'http').replace(/\/ws$/, '/branding');
+      const res = await fetch(httpUrl);
+      if (res.ok) {
+        const data = await res.json();
+        branding.set(data);
+        console.log('[Branding] Loaded:', data);
+      }
+    } catch (err) {
+      console.warn('[Branding] Failed to fetch, using defaults:', err);
+    }
+  }
 
   // Strip transcript echo from response (already shown separately in PWA)
   // Matches: > 🎤 "..." or > 📖 "..." at start of response
@@ -309,6 +327,7 @@
 
   // Lifecycle
   onMount(() => {
+    fetchBranding();
     initWebSocket();
     initPlayer();
     initVAD();
@@ -354,7 +373,7 @@
   <div class="container">
     <!-- Status Indicator -->
     <div class="indicator">
-      <div class="icon">🌀</div>
+      <div class="icon">{currentBranding.emoji}</div>
     </div>
     
     <!-- State Text -->

@@ -6,6 +6,7 @@
 
 // Default to localhost, can be overridden via env
 const CHATTERBOX_URL = process.env.CHATTERBOX_URL || 'http://localhost:8880';
+const CHATTERBOX_VOICE = process.env.CHATTERBOX_VOICE || 'default';
 
 export interface TTSChunkCallback {
   (chunk: Buffer): void;
@@ -18,7 +19,7 @@ export interface TTSChunkCallback {
  * We still use the callback interface for compatibility.
  * 
  * @param text - Text to convert to speech
- * @param voice - Voice name (default: Eli)
+ * @param voice - Voice name (default from CHATTERBOX_VOICE env or 'default')
  * @param onChunk - Callback for audio data
  */
 export async function streamTTS(
@@ -36,7 +37,7 @@ export async function streamTTS(
     },
     body: JSON.stringify({
       input: text,
-      voice: voice || 'Eli',
+      voice: voice || CHATTERBOX_VOICE,
       response_format: 'wav',
     }),
   });

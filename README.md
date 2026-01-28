@@ -73,6 +73,20 @@ Or set up a persistent tunnel pointing to `localhost:3001`.
 | `PORT` | No | Server port (default: `3001`) |
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox server URL (e.g., `http://localhost:8880`) |
+| `ASSISTANT_NAME` | No | Assistant name shown in PWA (default: `Moltbot`) |
+| `ASSISTANT_EMOJI` | No | Emoji shown in PWA (default: `🦞`) |
+
+## Customization
+
+The PWA fetches branding from the server's `/branding` endpoint on load. Customize via environment variables:
+
+```bash
+# In server/.env
+ASSISTANT_NAME=MyBot
+ASSISTANT_EMOJI=🤖
+```
+
+The PWA will display your custom name and emoji instead of the Moltbot defaults.
 
 ## TTS Providers
 

@@ -1,15 +1,15 @@
 /**
  * The Ear - Configuration Loader
  * 
- * Loads config from environment and ~/.clawdbot/clawdbot.json
+ * Loads config from environment and ~/.moltbot/moltbot.json
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { ProxyConfig } from './types.js';
 
-interface ClawdbotConfig {
+interface MoltbotConfig {
   env?: {
     vars?: {
       GROQ_API_KEY?: string;
@@ -32,31 +32,35 @@ interface ClawdbotConfig {
 }
 
 /**
- * Load configuration from clawdbot.json and environment
+ * Load configuration from moltbot.json and environment
  */
 export function loadConfig(): ProxyConfig {
-  const configPath = join(homedir(), '.clawdbot', 'clawdbot.json');
+  // Try ~/.moltbot first, fall back to ~/.clawdbot for backwards compatibility
+  let configPath = join(homedir(), '.moltbot', 'moltbot.json');
+  if (!existsSync(configPath)) {
+    configPath = join(homedir(), '.clawdbot', 'clawdbot.json');
+  }
   
-  let clawdbotConfig: ClawdbotConfig = {};
+  let moltbotConfig: MoltbotConfig = {};
   try {
     const raw = readFileSync(configPath, 'utf-8');
-    clawdbotConfig = JSON.parse(raw);
-    console.log('✓ Loaded clawdbot.json');
+    moltbotConfig = JSON.parse(raw);
+    console.log(`✓ Loaded ${configPath}`);
   } catch (err) {
-    console.error('✗ Failed to load clawdbot.json:', err);
-    throw new Error('Could not load clawdbot.json');
+    console.error(`✗ Failed to load ${configPath}:`, err);
+    throw new Error('Could not load moltbot.json');
   }
 
   // Extract values
   const groqApiKey = process.env.GROQ_API_KEY 
-    || clawdbotConfig.env?.vars?.GROQ_API_KEY
+    || moltbotConfig.env?.vars?.GROQ_API_KEY
     || '';
     
-  const gatewayPort = clawdbotConfig.gateway?.port || 18789;
-  const gatewayToken = clawdbotConfig.gateway?.auth?.token || '';
+  const gatewayPort = moltbotConfig.gateway?.port || 18789;
+  const gatewayToken = moltbotConfig.gateway?.auth?.token || '';
   
-  const elevenLabsApiKey = clawdbotConfig.messages?.tts?.elevenlabs?.apiKey || '';
-  const elevenLabsVoiceId = clawdbotConfig.messages?.tts?.elevenlabs?.voiceId || '';
+  const elevenLabsApiKey = moltbotConfig.messages?.tts?.elevenlabs?.apiKey || '';
+  const elevenLabsVoiceId = moltbotConfig.messages?.tts?.elevenlabs?.voiceId || '';
 
   // Validate required config
   const missing: string[] = [];
@@ -75,6 +79,10 @@ export function loadConfig(): ProxyConfig {
     throw new Error('EAR_AUTH_TOKEN environment variable is required');
   }
 
+  // Branding (env vars with Moltbot defaults)
+  const assistantName = process.env.ASSISTANT_NAME || 'Moltbot';
+  const assistantEmoji = process.env.ASSISTANT_EMOJI || '🦞';
+
   const config: ProxyConfig = {
     port: parseInt(process.env.PORT || '3001', 10),
     groqApiKey,
@@ -84,12 +92,15 @@ export function loadConfig(): ProxyConfig {
     elevenLabsVoiceId,
     sessionKey: process.env.SESSION_KEY || 'agent:main:main',  // Shared with CLI for seamless handoff
     authToken,
+    assistantName,
+    assistantEmoji,
   };
 
   console.log('✓ Configuration loaded');
   console.log(`  Port: ${config.port}`);
   console.log(`  Gateway: ${config.gatewayUrl}`);
   console.log(`  Session: ${config.sessionKey}`);
+  console.log(`  Assistant: ${config.assistantEmoji} ${config.assistantName}`);
   
   return config;
 }

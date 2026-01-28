@@ -39,6 +39,15 @@ app.get('/health', (_req, res) => {
   });
 });
 
+// Branding endpoint - PWA fetches this on load
+app.get('/branding', (_req, res) => {
+  res.json({
+    name: config.assistantName,
+    emoji: config.assistantEmoji,
+    description: `Hands-free voice interface for ${config.assistantName}`,
+  });
+});
+
 // ============================================================
 // Gateway Client
 // ============================================================
@@ -172,7 +181,7 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     console.log('[Pipeline] Sending to gateway...');
     sendMessage(ws, { type: 'status', state: 'thinking' });
     
-    // Prefix message so Vincent knows this is voice
+    // Prefix message so assistant knows this is voice input
     // 🎤 = TTS on (be concise), 📖 = TTS off (full response OK)
     const ttsEnabled = connectionTtsState.get(ws) ?? true;
     const prefix = ttsEnabled ? '🎤' : '📖';
