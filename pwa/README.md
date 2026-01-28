@@ -192,6 +192,6 @@ Placeholder icons are included. To customize:
 - Try tapping the screen after a response comes in
 
 ### Long response times
-- Complex queries may take up to 5 minutes (especially with Claude Opus)
+- Complex queries may take up to 5 minutes (depending on model and task complexity)
 - The server sends keepalive pings to prevent timeout
 - Check the "thinking" status indicator

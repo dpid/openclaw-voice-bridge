@@ -167,7 +167,7 @@ npm run dev
 1. **Client sends audio** → Base64 encoded audio blob
 2. **Groq transcribes** → Text transcript  
 3. **Send transcript to client** → For UI display
-4. **Gateway processes** → Chat with Claude (5 minute timeout for complex tasks)
+4. **Gateway processes** → Chat with AI (5 minute timeout for complex tasks)
 5. **Keepalive pings** → Sent every 15s during long waits
 6. **Send response to client** → For UI display
 7. **TTS generation** → ElevenLabs (streaming) or Chatterbox (full)
