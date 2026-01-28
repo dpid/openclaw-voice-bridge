@@ -163,11 +163,11 @@ The PWA connects to the proxy server and uses this protocol:
 
 ## Icons
 
-Placeholder icons are included. To generate proper icons:
+Placeholder icons are included. To customize:
 
-1. Open `public/generate-icons.html` in a browser
-2. Download the generated PNG files
-3. Replace `public/ear-192.png` and `public/ear-512.png`
+1. Replace `public/icon-192.png` and `public/icon-512.png` with your own
+2. Optionally replace `public/icon-maskable-512.png` for Android adaptive icons
+3. Rebuild the PWA
 
 ## Troubleshooting
 

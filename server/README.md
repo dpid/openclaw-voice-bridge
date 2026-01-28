@@ -49,7 +49,7 @@ npm start
 | `PORT` | No | Server port (default: `3001`) |
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox TTS URL (e.g., `http://localhost:8880`) |
-| `CHATTERBOX_VOICE` | No | Chatterbox voice name (default: `default`) |
+| `CHATTERBOX_VOICE` | No | Chatterbox voice name (default: `Eli`) |
 | `ASSISTANT_NAME` | No | Assistant name for branding (default: `Moltbot`) |
 | `ASSISTANT_EMOJI` | No | Emoji for branding (default: `🦞`) |
 
