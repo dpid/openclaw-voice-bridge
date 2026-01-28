@@ -137,8 +137,18 @@ npm run test:all       # Run all tests
 ### TTS Mode Prefix
 
 Voice messages are prefixed to indicate TTS state:
-- **🎤** = TTS enabled → Claude responds concisely (saves ElevenLabs credits)
-- **📖** = TTS disabled → Full response OK (user is reading)
+- **🎤** = TTS enabled
+- **📖** = TTS disabled
+
+For your assistant to respond appropriately, add this to your workspace's `TOOLS.md`:
+
+```markdown
+## Voice Interface
+
+Voice messages arrive prefixed based on TTS state:
+- **🎤** = TTS on → Be concise (1-3 sentences), no markdown formatting, skip pleasantries
+- **📖** = TTS off → Full response OK (user is reading)
+```
 
 ## Deployment
 
