@@ -7,7 +7,7 @@ A hands-free voice interface for Moltbot. Voice-activated PWA with automatic spe
 ```
 ┌─────────────────┐     WebSocket      ┌─────────────────┐     WebSocket     ┌─────────────────┐
 │   PWA (Svelte)  │ ←───────────────→  │  Proxy Server   │ ←───────────────→ │ Moltbot Gateway │
-│  Voice capture  │                    │  Groq + TTS     │                   │  Claude session │
+│  Voice capture  │                    │  Groq + TTS     │                   │    AI session   │
 └─────────────────┘                    └─────────────────┘                   └─────────────────┘
 ```
 
