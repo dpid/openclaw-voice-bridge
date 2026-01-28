@@ -83,6 +83,9 @@ export function loadConfig(): ProxyConfig {
   const assistantName = process.env.ASSISTANT_NAME || 'Moltbot';
   const assistantEmoji = process.env.ASSISTANT_EMOJI || '🦞';
 
+  // Chatterbox voice (only used when CHATTERBOX_URL is set)
+  const chatterboxVoice = process.env.CHATTERBOX_VOICE || 'Eli';
+
   const config: ProxyConfig = {
     port: parseInt(process.env.PORT || '3001', 10),
     groqApiKey,
@@ -90,6 +93,7 @@ export function loadConfig(): ProxyConfig {
     gatewayToken,
     elevenLabsApiKey,
     elevenLabsVoiceId,
+    chatterboxVoice,
     sessionKey: process.env.SESSION_KEY || 'agent:main:main',  // Shared with CLI for seamless handoff
     authToken,
     assistantName,

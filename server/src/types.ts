@@ -142,6 +142,7 @@ export interface ProxyConfig {
   gatewayToken: string;
   elevenLabsApiKey: string;
   elevenLabsVoiceId: string;
+  chatterboxVoice: string;
   sessionKey: string;
   authToken: string;  // Required token for PWA connections
   // Branding

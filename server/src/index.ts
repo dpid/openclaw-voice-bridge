@@ -250,10 +250,13 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
 }
 
 async function generateAndStreamTTS(ws: WebSocket, text: string): Promise<void> {
+  // Use appropriate voice based on TTS provider
+  const voice = USE_CHATTERBOX ? config.chatterboxVoice : config.elevenLabsVoiceId;
+  
   await streamTTS(
     text,
     config.elevenLabsApiKey,
-    config.elevenLabsVoiceId,
+    voice,
     (chunk) => {
       sendMessage(ws, { 
         type: 'audio', 
