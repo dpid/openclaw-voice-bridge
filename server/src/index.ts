@@ -14,7 +14,11 @@ import { readFile } from 'node:fs/promises';
 import { loadConfig } from './config.js';
 import { transcribeAudio } from './groq.js';
 import { GatewayClient, GatewayResponse } from './gateway.js';
-import { streamTTS } from './tts.js';
+// TTS Provider: Set CHATTERBOX_URL env var to use local Chatterbox, otherwise ElevenLabs
+const USE_CHATTERBOX = !!process.env.CHATTERBOX_URL;
+import { streamTTS as streamElevenLabs } from './tts.js';
+import { streamTTS as streamChatterbox } from './tts-chatterbox.js';
+const streamTTS = USE_CHATTERBOX ? streamChatterbox : streamElevenLabs;
 import type { ClientMessage, ServerMessage, ProxyConfig } from './types.js';
 
 // ============================================================
@@ -83,8 +87,8 @@ async function sendToGateway(message: string): Promise<GatewayResponse> {
     // Set up response callback
     const timeout = setTimeout(() => {
       pendingResponseCallback = null;
-      reject(new Error('Gateway response timeout'));
-    }, 120000); // 2 minute timeout
+      reject(new Error('Gateway response timeout (5 min)'));
+    }, 300000); // 5 minute timeout for complex Opus tasks
 
     pendingResponseCallback = (response) => {
       clearTimeout(timeout);
@@ -98,6 +102,26 @@ async function sendToGateway(message: string): Promise<GatewayResponse> {
       reject(err);
     });
   });
+}
+
+// Keepalive ping during long waits (prevents WebSocket timeout)
+let keepaliveInterval: ReturnType<typeof setInterval> | null = null;
+
+function startKeepalive(ws: WebSocket): void {
+  stopKeepalive();
+  keepaliveInterval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN && pendingResponseCallback) {
+      // Send a status update to keep client informed during long waits
+      sendMessage(ws, { type: 'status', state: 'thinking' });
+    }
+  }, 15000); // Every 15 seconds
+}
+
+function stopKeepalive(): void {
+  if (keepaliveInterval) {
+    clearInterval(keepaliveInterval);
+    keepaliveInterval = null;
+  }
 }
 
 // ============================================================
@@ -152,7 +176,15 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     // 🎤 = TTS on (be concise), 📖 = TTS off (full response OK)
     const ttsEnabled = connectionTtsState.get(ws) ?? true;
     const prefix = ttsEnabled ? '🎤' : '📖';
-    const response = await sendToGateway(`${prefix} ${transcript}`);
+    
+    // Start keepalive pings during long waits (complex Opus tasks can take minutes)
+    startKeepalive(ws);
+    let response: GatewayResponse;
+    try {
+      response = await sendToGateway(`${prefix} ${transcript}`);
+    } finally {
+      stopKeepalive();
+    }
     console.log(`[Pipeline] Response: "${response.text.slice(0, 100)}..." mediaUrls:`, response.mediaUrls);
     
     // Send response text to client (use text if available, or a placeholder)
