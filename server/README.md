@@ -205,15 +205,9 @@ Voice messages are prefixed to indicate TTS state:
 - **🎤** = TTS enabled
 - **📖** = TTS disabled
 
-For your assistant to respond appropriately, add this to your workspace's `TOOLS.md`:
+To configure your assistant, send this message to your Moltbot:
 
-```markdown
-## Voice Interface
-
-Voice messages arrive prefixed based on TTS state:
-- **🎤** = TTS on → Be concise (1-3 sentences), no markdown formatting, skip pleasantries
-- **📖** = TTS off → Full response OK (user is reading)
-```
+> Add a "Voice Interface" section to TOOLS.md explaining that voice messages arrive prefixed with 🎤 (TTS on — be concise, 1-3 sentences, no markdown, skip pleasantries) or 📖 (TTS off — full response OK, user is reading).
 
 ## Required Moltbot Config
 
