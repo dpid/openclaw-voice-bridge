@@ -1,6 +1,6 @@
 # Moltbot Voice Bridge 🦞
 
-A hands-free voice interface for Moltbot. Push-to-talk PWA that shares context with your CLI session — seamless keyboard ↔ voice handoff.
+A hands-free voice interface for Moltbot. Voice-activated PWA with automatic speech detection — just talk naturally. Shares context with your CLI session for seamless keyboard ↔ voice handoff.
 
 ## Architecture
 
