@@ -1,5 +1,5 @@
 /**
- * The Ear - Wake Lock
+ * Moltbot Voice Bridge - Wake Lock
  * Keeps the screen on during a voice session
  */
 

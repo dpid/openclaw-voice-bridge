@@ -1,5 +1,5 @@
 /**
- * The Ear - Svelte Stores
+ * Moltbot Voice Bridge - Svelte Stores
  */
 
 import { writable } from 'svelte/store';

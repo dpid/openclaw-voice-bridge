@@ -1,5 +1,5 @@
 /**
- * The Ear - Audio Playback
+ * Moltbot Voice Bridge - Audio Playback
  * Uses Web Audio API with a shared AudioContext for Safari compatibility
  */
 

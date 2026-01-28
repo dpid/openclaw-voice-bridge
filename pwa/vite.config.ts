@@ -4,22 +4,22 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   // Base path for GitHub Pages - uses repo name
-  base: process.env.GITHUB_ACTIONS ? '/the-ear/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/moltbot-voice-bridge/' : '/',
   plugins: [
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
       manifest: {
-        name: 'The Ear',
-        short_name: 'The Ear',
+        name: 'Moltbot Voice Bridge',
+        short_name: 'Moltbot Voice Bridge',
         description: 'Hands-free voice interface for Moltbot',
         theme_color: '#1a1a2e',
         background_color: '#1a1a2e',
         display: 'standalone',
         orientation: 'portrait',
-        scope: process.env.GITHUB_ACTIONS ? '/the-ear/' : '/',
-        start_url: process.env.GITHUB_ACTIONS ? '/the-ear/' : '/',
+        scope: process.env.GITHUB_ACTIONS ? '/moltbot-voice-bridge/' : '/',
+        start_url: process.env.GITHUB_ACTIONS ? '/moltbot-voice-bridge/' : '/',
         icons: [
           {
             src: 'icon-192.png',

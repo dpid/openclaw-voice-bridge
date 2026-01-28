@@ -1,5 +1,5 @@
 /**
- * The Ear - ElevenLabs TTS
+ * Moltbot Voice Bridge - ElevenLabs TTS
  * 
  * Text-to-speech using ElevenLabs streaming API
  */

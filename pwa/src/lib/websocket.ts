@@ -1,5 +1,5 @@
 /**
- * The Ear - WebSocket Client
+ * Moltbot Voice Bridge - WebSocket Client
  * Connects to the proxy server and handles message protocol
  */
 

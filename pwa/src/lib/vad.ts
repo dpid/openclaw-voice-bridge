@@ -1,5 +1,5 @@
 /**
- * The Ear - Voice Activity Detection
+ * Moltbot Voice Bridge - Voice Activity Detection
  * Uses @ricky0123/vad-web (Silero VAD via ONNX) for speech detection
  * Loaded from CDN via script tags to bypass bundler issues
  */

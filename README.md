@@ -1,4 +1,4 @@
-# The Ear 👂
+# Moltbot Voice Bridge 🦞
 
 A hands-free voice interface for Moltbot. Push-to-talk PWA that shares context with your CLI session — seamless keyboard ↔ voice handoff.
 
@@ -142,7 +142,7 @@ Voice messages are prefixed to indicate TTS state:
 
 ## Deployment
 
-The PWA is deployed to GitHub Pages at https://dpid.github.io/the-ear/
+The PWA is deployed to GitHub Pages at https://dpid.github.io/moltbot-voice-bridge/
 
 The proxy server runs locally and is exposed via cloudflared tunnel.
 

@@ -1,7 +1,7 @@
 {
-  "name": "the-ear-proxy",
+  "name": "moltbot-voice-bridge-server",
   "version": "1.0.0",
-  "description": "Voice PWA proxy server for The Ear - bridges PWA to Clawdbot Gateway",
+  "description": "Voice PWA proxy server for Moltbot Voice Bridge - bridges PWA to Clawdbot Gateway",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

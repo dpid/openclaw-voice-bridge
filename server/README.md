@@ -1,4 +1,4 @@
-# The Ear - Proxy Server
+# Moltbot Voice Bridge - Proxy Server
 
 Voice PWA proxy server that bridges the PWA client to Moltbot Gateway, Groq transcription, and TTS (ElevenLabs or Chatterbox).
 

@@ -1,5 +1,5 @@
 /**
- * The Ear - Chatterbox TTS
+ * Moltbot Voice Bridge - Chatterbox TTS
  * 
  * Text-to-speech using local Chatterbox server (OpenAI-compatible API)
  */

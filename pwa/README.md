@@ -1,4 +1,4 @@
-# The Ear - Voice PWA
+# Moltbot Voice Bridge - Voice PWA
 
 A voice-first Progressive Web App for hands-free conversation with your Moltbot assistant.
 

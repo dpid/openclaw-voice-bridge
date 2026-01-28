@@ -1,5 +1,5 @@
 /**
- * The Ear - Configuration Loader
+ * Moltbot Voice Bridge - Configuration Loader
  * 
  * Loads config from environment and ~/.moltbot/moltbot.json
  */

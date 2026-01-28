@@ -1,5 +1,5 @@
 /**
- * The Ear - Gateway Client
+ * Moltbot Voice Bridge - Gateway Client
  * 
  * WebSocket client for Clawdbot Gateway communication
  */
@@ -321,7 +321,7 @@ export class GatewayClient {
       client: {
         // Must be a known gateway client ID
         id: 'gateway-client',
-        displayName: 'The Ear Proxy',
+        displayName: 'Moltbot Voice Bridge Proxy',
         version: '1.0.0',
         platform: process.platform,
         mode: 'backend',

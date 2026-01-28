@@ -1,5 +1,5 @@
 /**
- * The Ear - Proxy Server
+ * Moltbot Voice Bridge - Proxy Server
  * 
  * Express + WebSocket server that bridges the PWA to:
  * - Groq (transcription)
@@ -354,7 +354,7 @@ wss.on('connection', (ws, req) => {
 // ============================================================
 
 async function main(): Promise<void> {
-  console.log('\n🦻 The Ear - Proxy Server\n');
+  console.log('\n🦻 Moltbot Voice Bridge - Proxy Server\n');
   
   // Connect to gateway
   try {

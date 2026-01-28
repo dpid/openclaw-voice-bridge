@@ -1,5 +1,5 @@
 /**
- * The Ear - Type Definitions
+ * Moltbot Voice Bridge - Type Definitions
  */
 
 // UI States

@@ -1,5 +1,5 @@
 /**
- * The Ear - Groq Transcription
+ * Moltbot Voice Bridge - Groq Transcription
  * 
  * Transcribes audio using Groq's Whisper API
  */
