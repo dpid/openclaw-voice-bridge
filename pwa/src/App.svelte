@@ -627,7 +627,7 @@
   }
 
   .state-processing .icon {
-    animation: spin 1s linear infinite;
+    animation: bounce 0.6s ease-in-out infinite;
   }
 
   .state-speaking .icon {
