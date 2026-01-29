@@ -77,14 +77,15 @@ export class AudioPlayer {
       
       console.log('[Audio] Context state:', ctx.state);
 
-      // Decode all base64 chunks and combine
-      const binaryChunks = this.chunks.map(chunk => {
-        const binary = atob(chunk);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-          bytes[i] = binary.charCodeAt(i);
+      // Decode all base64 chunks and combine (with error handling)
+      const binaryChunks = this.chunks.map((chunk, i) => {
+        try {
+          const binary = atob(chunk);
+          return Uint8Array.from(binary, c => c.charCodeAt(0));
+        } catch (err) {
+          console.error(`[Audio] Failed to decode chunk ${i}:`, err);
+          throw new Error('Invalid audio data');
         }
-        return bytes;
       });
 
       // Calculate total length

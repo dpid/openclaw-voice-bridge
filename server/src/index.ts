@@ -9,6 +9,7 @@
 
 import express from 'express';
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { readFile } from 'node:fs/promises';
 import { loadConfig } from './config.js';
@@ -196,32 +197,39 @@ function sendMessage(ws: WebSocket, msg: ServerMessage): void {
 }
 
 async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?: { lat: number; lng: number; accuracy?: number }): Promise<void> {
+  const reqId = randomUUID().slice(0, 8);  // Short ID for logs
+  
   try {
     // 1. Transcribe audio
-    console.log('[Pipeline] Transcribing audio...');
+    console.log(`[${reqId}] Transcribing audio...`);
     sendMessage(ws, { type: 'status', state: 'transcribing' });
     
     const transcript = await transcribeAudio(audioBase64, config.groqApiKey);
-    console.log(`[Pipeline] Transcript: "${transcript}"`);
+    console.log(`[${reqId}] Transcript: "${transcript}"`);
     
     if (!transcript.trim()) {
-      console.log('[Pipeline] Empty transcript, ignoring');
+      console.log(`[${reqId}] Empty transcript, ignoring`);
       sendMessage(ws, { type: 'audio_end' }); // Reset client state
       return;
     }
     
     // Filter common Whisper hallucinations on silence/noise
-    const hallucinations = [
-      'thank you',
-      'thanks for watching',
-      'subscribe',
-      'like and subscribe',
-      'see you next time',
-      'bye',
+    // Uses pattern matching for partial matches and checks minimum length
+    const hallucinationPatterns = [
+      /^thanks?\s*(for\s+watching)?$/i,
+      /^(please\s+)?subscribe/i,
+      /^like\s+and\s+subscribe/i,
+      /^see\s+you\s+(next\s+time|later|soon)/i,
+      /^bye+$/i,
+      /^(uh+|um+|hmm+)$/i,
+      /^\.+$/,  // Just periods
     ];
-    const normalized = transcript.trim().toLowerCase().replace(/[.!?,]/g, '');
-    if (hallucinations.includes(normalized)) {
-      console.log(`[Pipeline] Filtered hallucination: "${transcript}"`);
+    const normalized = transcript.trim().replace(/[.!?,]/g, '');
+    const isHallucination = hallucinationPatterns.some(p => p.test(normalized));
+    const isTooShort = normalized.length < 2;  // Single char is likely noise
+    
+    if (isHallucination || isTooShort) {
+      console.log(`[${reqId}] Filtered ${isTooShort ? 'noise' : 'hallucination'}: "${transcript}"`);
       sendMessage(ws, { type: 'audio_end' }); // Reset client state
       return;
     }
@@ -230,7 +238,7 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
     sendMessage(ws, { type: 'transcript', text: transcript });
 
     // 2. Send to gateway and get response
-    console.log('[Pipeline] Sending to gateway...');
+    console.log(`[${reqId}] Sending to gateway...`);
     sendMessage(ws, { type: 'status', state: 'thinking' });
     
     // Prefix message so assistant knows this is voice input
@@ -252,14 +260,14 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
     } finally {
       stopKeepalive(ws);
     }
-    console.log(`[Pipeline] Response: "${response.text.slice(0, 100)}..." mediaUrls:`, response.mediaUrls);
+    console.log(`[${reqId}] Response: "${response.text.slice(0, 100)}..." mediaUrls:`, response.mediaUrls);
     
     // Send response text to client (use text if available, or a placeholder)
     const displayText = response.text || '(audio response)';
     sendMessage(ws, { type: 'response', text: displayText });
 
     // 3. Convert response to speech
-    console.log('[Pipeline] Generating TTS...');
+    console.log(`[${reqId}] Generating TTS...`);
     sendMessage(ws, { type: 'status', state: 'speaking' });
     
     if (response.text) {
@@ -278,34 +286,34 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
         .trim();
       
       if (spokenText) {
-        console.log(`[Pipeline] Speaking (own TTS): "${spokenText.slice(0, 100)}..."`);
+        console.log(`[${reqId}] Speaking (own TTS): "${spokenText.slice(0, 100)}..."`);
         await generateAndStreamTTS(ws, spokenText);
       } else {
-        console.log('[Pipeline] No text to speak after stripping');
+        console.log(`[${reqId}] No text to speak after stripping`);
       }
     } else if (response.mediaUrls && response.mediaUrls.length > 0) {
       // No text but gateway generated audio - use that
       const audioPath = response.mediaUrls[0];
-      console.log(`[Pipeline] Using gateway TTS (no text): ${audioPath}`);
+      console.log(`[${reqId}] Using gateway TTS (no text): ${audioPath}`);
       
       try {
         const audioBuffer = await readFile(audioPath);
-        console.log(`[Pipeline] Read ${audioBuffer.length} bytes`);
+        console.log(`[${reqId}] Read ${audioBuffer.length} bytes`);
         sendMessage(ws, { type: 'audio', data: audioBuffer.toString('base64') });
       } catch (readErr) {
-        console.error(`[Pipeline] Failed to read gateway audio: ${readErr}`);
+        console.error(`[${reqId}] Failed to read gateway audio: ${readErr}`);
       }
     } else {
-      console.log('[Pipeline] No text or audio to speak');
+      console.log(`[${reqId}] No text or audio to speak`);
     }
     
     // Signal end of audio
     sendMessage(ws, { type: 'audio_end' });
-    console.log('[Pipeline] Complete');
+    console.log(`[${reqId}] Complete`);
 
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('[Pipeline] Error:', message);
+    console.error(`[${reqId}] Error:`, message);
     
     // Sanitize error message for client - don't leak internal details
     const safeMessage = getSafeErrorMessage(err);

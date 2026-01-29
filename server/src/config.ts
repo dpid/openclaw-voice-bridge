@@ -72,6 +72,17 @@ export function loadConfig(): ProxyConfig {
   if (missing.length > 0) {
     throw new Error(`Missing required config: ${missing.join(', ')}`);
   }
+  
+  // Validate config format (catch placeholder values)
+  const invalid: string[] = [];
+  if (groqApiKey.length < 20) invalid.push('GROQ_API_KEY (too short)');
+  if (gatewayToken.length < 10) invalid.push('gateway.auth.token (too short)');
+  if (elevenLabsApiKey.length < 20) invalid.push('elevenlabs.apiKey (too short)');
+  if (elevenLabsVoiceId.length < 10) invalid.push('elevenlabs.voiceId (too short)');
+  
+  if (invalid.length > 0) {
+    throw new Error(`Invalid config values: ${invalid.join(', ')}`);
+  }
 
   // Auth token for PWA connections (required!)
   const authToken = process.env.EAR_AUTH_TOKEN || '';
