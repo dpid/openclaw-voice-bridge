@@ -1,1 +1,11 @@
 *.sh
+.env
+.env.local
+.env.*
+!.env.example
+dist/
+build/
+.DS_Store
+.vscode/
+.idea/
+*:Zone.Identifier
