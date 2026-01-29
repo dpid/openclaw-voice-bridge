@@ -7,6 +7,7 @@
   import { WakeLock } from './lib/wakelock';
   import { VoiceActivityDetector, audioToWav } from './lib/vad';
   import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
   import type { AppState, Location } from './lib/types';
   
   // Configure marked for safe rendering
@@ -14,6 +15,11 @@
     breaks: true,  // Convert \n to <br>
     gfm: true,     // GitHub Flavored Markdown
   });
+  
+  // Sanitize HTML output from marked
+  function safeMarkdown(text: string): string {
+    return DOMPurify.sanitize(marked.parse(text) as string);
+  }
 
   // Configuration - uses env vars in production, falls back to localhost for dev
   const PROXY_URL = import.meta.env.VITE_PROXY_URL || 'ws://localhost:3001/ws';
@@ -80,7 +86,7 @@
     currentResponse = v;
     const stripped = stripTranscriptEcho(v);
     if (stripped) {
-      const html = marked.parse(stripped) as string;
+      const html = safeMarkdown(stripped);
       // Finalize user message if pending
       if (pendingUserMessageId !== null) {
         pendingUserMessageId = null;
