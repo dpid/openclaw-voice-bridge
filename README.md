@@ -11,9 +11,10 @@ A hands-free voice interface for Moltbot. Voice-activated PWA with automatic spe
 └─────────────────┘                    └─────────────────┘                   └─────────────────┘
 ```
 
-- **PWA**: Captures audio via push-to-talk, plays TTS responses
+- **PWA**: Captures audio with Voice Activity Detection, plays TTS responses
 - **Proxy Server**: Transcribes audio (Groq), routes to Gateway, streams TTS back
 - **Shared Session**: Uses `agent:main:main` by default — same context as CLI
+- **Location Aware**: Optionally shares your location so you can ask about nearby places
 
 ## Setup
 
@@ -127,12 +128,22 @@ npm run test:all       # Run all tests
 
 ## How It Works
 
-1. User holds push-to-talk button, speaks
+1. User speaks — VAD automatically detects speech start/end
 2. Audio sent to proxy server via WebSocket
 3. Server transcribes with Groq (Whisper)
 4. Transcript sent to Moltbot Gateway (same session as CLI)
 5. Response streamed back with TTS audio
 6. PWA plays audio response
+
+### Location Awareness
+
+The PWA requests location permission on session start. When granted, your coordinates are included with each voice message:
+
+```
+[Location: 45.5515, -122.6732] Find me a coffee shop nearby
+```
+
+Your assistant can use this to answer questions about nearby places, give directions, or provide location-relevant information.
 
 ### TTS Mode Prefix
 
