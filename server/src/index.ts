@@ -3,8 +3,8 @@
  * 
  * Express + WebSocket server that bridges the PWA to:
  * - Groq (transcription)
- * - Clawdbot Gateway (chat)
- * - ElevenLabs (TTS)
+ * - Moltbot Gateway (chat)
+ * - ElevenLabs or Chatterbox (TTS)
  */
 
 import express from 'express';
@@ -29,11 +29,32 @@ const config = loadConfig();
 
 const app = express();
 const server = createServer(app);
-const wss = new WebSocketServer({ server, path: '/ws' });
+const wss = new WebSocketServer({ 
+  server, 
+  path: '/ws',
+  maxPayload: 10 * 1024 * 1024,  // 10MB max message size
+});
 
-// CORS middleware for cross-origin requests (PWA on different domain)
-app.use((_req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+// Constants
+const MAX_AUDIO_SIZE = 10 * 1024 * 1024; // 10MB
+const RATE_LIMIT_REQUESTS = 20; // requests per minute
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const GATEWAY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes for complex tasks
+const KEEPALIVE_INTERVAL_MS = 15 * 1000; // 15 seconds
+const AUTH_TIMEOUT_MS = 10 * 1000; // 10 seconds
+
+// CORS middleware - use allowed origins from env or default to common dev URLs
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://dpid.github.io',
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed))) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   next();
@@ -105,7 +126,7 @@ async function sendToGateway(message: string): Promise<GatewayResponse> {
     const timeout = setTimeout(() => {
       pendingResponseCallback = null;
       reject(new Error('Gateway response timeout (5 min)'));
-    }, 300000); // 5 minute timeout for complex Opus tasks
+    }, GATEWAY_TIMEOUT_MS);
 
     pendingResponseCallback = (response) => {
       clearTimeout(timeout);
@@ -131,7 +152,7 @@ function startKeepalive(ws: WebSocket): void {
       // Send a status update to keep client informed during long waits
       sendMessage(ws, { type: 'status', state: 'thinking' });
     }
-  }, 15000); // Every 15 seconds
+  }, KEEPALIVE_INTERVAL_MS);
 }
 
 function stopKeepalive(): void {
@@ -262,9 +283,39 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[Pipeline] Error:', message);
-    sendMessage(ws, { type: 'error', message });
+    
+    // Sanitize error message for client - don't leak internal details
+    const safeMessage = getSafeErrorMessage(err);
+    sendMessage(ws, { type: 'error', message: safeMessage });
     sendMessage(ws, { type: 'audio_end' }); // Reset client state
   }
+}
+
+/**
+ * Get a safe error message for the client without leaking internal details
+ */
+function getSafeErrorMessage(err: unknown): string {
+  if (!(err instanceof Error)) {
+    return 'An unexpected error occurred';
+  }
+  
+  const message = err.message.toLowerCase();
+  
+  // Map known errors to safe messages
+  if (message.includes('timeout')) {
+    return 'Request timed out. Please try again.';
+  }
+  if (message.includes('gateway') || message.includes('not connected')) {
+    return 'Service temporarily unavailable. Please try again.';
+  }
+  if (message.includes('transcri')) {
+    return 'Failed to process audio. Please try again.';
+  }
+  if (message.includes('tts') || message.includes('speech')) {
+    return 'Voice synthesis failed. Response is text-only.';
+  }
+  
+  return 'An error occurred. Please try again.';
 }
 
 async function generateAndStreamTTS(ws: WebSocket, text: string): Promise<void> {
@@ -285,8 +336,30 @@ async function generateAndStreamTTS(ws: WebSocket, text: string): Promise<void> 
 }
 
 // Track state per connection
+// Per-connection state
 const connectionTtsState = new WeakMap<WebSocket, boolean>();
 const connectionAuthed = new WeakMap<WebSocket, boolean>();
+const connectionRateLimit = new WeakMap<WebSocket, { count: number; resetAt: number }>();
+
+/**
+ * Check rate limit for a connection
+ */
+function checkRateLimit(ws: WebSocket): boolean {
+  const now = Date.now();
+  let limit = connectionRateLimit.get(ws);
+  
+  if (!limit || now > limit.resetAt) {
+    limit = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
+  }
+  
+  if (limit.count >= RATE_LIMIT_REQUESTS) {
+    return false;
+  }
+  
+  limit.count++;
+  connectionRateLimit.set(ws, limit);
+  return true;
+}
 
 wss.on('connection', (ws, req) => {
   const clientIp = req.socket.remoteAddress;
@@ -303,7 +376,7 @@ wss.on('connection', (ws, req) => {
       sendMessage(ws, { type: 'error', message: 'Authentication timeout' });
       ws.close();
     }
-  }, 10000);
+  }, AUTH_TIMEOUT_MS);
 
   ws.on('message', async (data) => {
     try {
@@ -332,6 +405,21 @@ wss.on('connection', (ws, req) => {
       // Authenticated - process normally
       switch (msg.type) {
         case 'audio':
+          // Rate limiting
+          if (!checkRateLimit(ws)) {
+            sendMessage(ws, { type: 'error', message: 'Rate limit exceeded. Please wait.' });
+            sendMessage(ws, { type: 'audio_end' });
+            break;
+          }
+          
+          // Input validation - check size
+          const audioSize = Buffer.byteLength(msg.data, 'base64');
+          if (audioSize > MAX_AUDIO_SIZE) {
+            sendMessage(ws, { type: 'error', message: 'Audio data too large' });
+            sendMessage(ws, { type: 'audio_end' });
+            break;
+          }
+          
           await handleAudioMessage(ws, msg.data, msg.location);
           break;
           
