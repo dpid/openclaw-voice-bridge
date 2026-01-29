@@ -7,7 +7,7 @@
   import { WakeLock } from './lib/wakelock';
   import { VoiceActivityDetector, audioToWav } from './lib/vad';
   import { marked } from 'marked';
-  import type { AppState } from './lib/types';
+  import type { AppState, Location } from './lib/types';
   
   // Configure marked for safe rendering
   marked.setOptions({
@@ -34,6 +34,10 @@
   // Mute states
   let micMuted = false;   // Mute Me - stops sending audio
   let ttsEnabled = true;  // Mute You - stops TTS playback
+  
+  // Location tracking
+  let currentLocation: Location | undefined = undefined;
+  let locationWatchId: number | null = null;
 
   // Chat history
   interface ChatMessage {
@@ -221,9 +225,9 @@
         vad?.pause();
         appState.set('processing');
         
-        // Convert to WAV and send
+        // Convert to WAV and send with location
         const base64 = audioToWav(audio);
-        ws?.sendAudio(base64);
+        ws?.sendAudio(base64, currentLocation);
       },
     });
   }
@@ -275,6 +279,51 @@
     endSession();
   }
 
+  // Start location tracking
+  function startLocationTracking(): void {
+    if (!navigator.geolocation) {
+      console.log('[Location] Geolocation not supported');
+      return;
+    }
+    
+    // Get initial position
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        currentLocation = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        };
+        console.log('[Location] Initial position:', currentLocation);
+      },
+      (err) => console.warn('[Location] Failed to get initial position:', err.message),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+    
+    // Watch for updates
+    locationWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        currentLocation = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        };
+        console.log('[Location] Updated:', currentLocation);
+      },
+      (err) => console.warn('[Location] Watch error:', err.message),
+      { enableHighAccuracy: true }
+    );
+  }
+  
+  // Stop location tracking
+  function stopLocationTracking(): void {
+    if (locationWatchId !== null) {
+      navigator.geolocation.clearWatch(locationWatchId);
+      locationWatchId = null;
+    }
+    currentLocation = undefined;
+  }
+
   // Start session
   async function startSession(): Promise<void> {
     console.log('[App] Starting session...');
@@ -293,6 +342,9 @@
       // Acquire wake lock
       wakeLock = new WakeLock();
       await wakeLock.acquire();
+      
+      // Start location tracking (non-blocking)
+      startLocationTracking();
       
       // Connect WebSocket
       ws?.connect();
@@ -329,6 +381,9 @@
     // Release wake lock
     wakeLock?.release();
     wakeLock = null;
+    
+    // Stop location tracking
+    stopLocationTracking();
     
     appState.set('idle');
     

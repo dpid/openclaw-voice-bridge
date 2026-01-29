@@ -54,10 +54,18 @@ export type ServerMessage =
   | PongMessage
   | StatusMessage;
 
+// Location data
+export interface Location {
+  lat: number;
+  lng: number;
+  accuracy?: number;
+}
+
 // Client message types (to proxy)
 export interface AudioMessage {
   type: 'audio';
   data: string; // base64
+  location?: Location;
 }
 
 export interface PingMessage {

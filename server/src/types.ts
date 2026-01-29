@@ -8,10 +8,18 @@
 // PWA ↔ Proxy Protocol
 // ============================================================
 
+/** Location data from client */
+export interface Location {
+  lat: number;
+  lng: number;
+  accuracy?: number;
+}
+
 /** Client sends audio data */
 export interface AudioMessage {
   type: 'audio';
   data: string;  // base64 encoded audio
+  location?: Location;
 }
 
 /** Client can request status */

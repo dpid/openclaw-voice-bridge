@@ -3,7 +3,7 @@
  * Connects to the proxy server and handles message protocol
  */
 
-import type { ServerMessage, ClientMessage } from './types';
+import type { ServerMessage, ClientMessage, Location } from './types';
 
 export interface WebSocketHandlers {
   onTranscript: (text: string) => void;
@@ -138,8 +138,8 @@ export class ProxyWebSocket {
     this.ws.send(JSON.stringify(message));
   }
 
-  sendAudio(base64: string): void {
-    this.send({ type: 'audio', data: base64 });
+  sendAudio(base64: string, location?: Location): void {
+    this.send({ type: 'audio', data: base64, location });
   }
 
   sendTtsState(enabled: boolean): void {

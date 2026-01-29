@@ -143,7 +143,7 @@ function sendMessage(ws: WebSocket, msg: ServerMessage): void {
   }
 }
 
-async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<void> {
+async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?: { lat: number; lng: number; accuracy?: number }): Promise<void> {
   try {
     // 1. Transcribe audio
     console.log('[Pipeline] Transcribing audio...');
@@ -186,11 +186,17 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string): Promise<v
     const ttsEnabled = connectionTtsState.get(ws) ?? true;
     const prefix = ttsEnabled ? '🎤' : '📖';
     
+    // Build message with optional location context
+    let message = `${prefix} ${transcript}`;
+    if (location) {
+      message = `${prefix} [Location: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}] ${transcript}`;
+    }
+    
     // Start keepalive pings during long waits (complex Opus tasks can take minutes)
     startKeepalive(ws);
     let response: GatewayResponse;
     try {
-      response = await sendToGateway(`${prefix} ${transcript}`);
+      response = await sendToGateway(message);
     } finally {
       stopKeepalive();
     }
@@ -318,7 +324,7 @@ wss.on('connection', (ws, req) => {
       // Authenticated - process normally
       switch (msg.type) {
         case 'audio':
-          await handleAudioMessage(ws, msg.data);
+          await handleAudioMessage(ws, msg.data, msg.location);
           break;
           
         case 'ping':
