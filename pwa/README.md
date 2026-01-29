@@ -10,8 +10,10 @@ A voice-first Progressive Web App for hands-free conversation with your Moltbot 
 - **Voice Responses** — TTS audio playback (toggleable)
 - **Chat History** — Scrollable transcript with Markdown rendering
 - **Mute Controls** — "Mute Me" (stops sending) and "Mute You" (stops TTS)
+- **Location Awareness** — Share location for "nearby" queries
 - **PWA Support** — Install on your home screen
 - **Wake Lock** — Keeps screen on during sessions
+- **XSS Protection** — All markdown sanitized with DOMPurify
 
 ## Requirements
 
@@ -76,11 +78,13 @@ If not set, defaults to `ws://localhost:3001/ws` for local development.
 
 5. **Grant microphone permission** when prompted
 
-6. **Tap "Start Session"** to begin
+6. **Grant location permission** (optional, for nearby queries)
 
-7. **Speak** — The app will automatically detect your voice via VAD
+7. **Tap "Start Session"** to begin
 
-8. **Wait for response** — Audio plays automatically (if TTS enabled)
+8. **Speak** — The app will automatically detect your voice via VAD
+
+9. **Wait for response** — Audio plays automatically (if TTS enabled)
 
 ## UI States
 
@@ -100,9 +104,10 @@ The PWA connects to the proxy server and uses this protocol:
 ### Client → Server
 
 ```typescript
-{ type: 'audio', data: string }      // base64 WAV audio
-{ type: 'tts', enabled: boolean }    // toggle TTS mode
-{ type: 'ping' }                     // keepalive
+{ type: 'auth', token: string }              // authenticate first
+{ type: 'audio', data: string, location?: Location }  // base64 WAV audio
+{ type: 'tts_state', enabled: boolean }      // toggle TTS mode
+{ type: 'ping' }                             // keepalive
 ```
 
 ### Server → Client
@@ -160,6 +165,32 @@ The PWA connects to the proxy server and uses this protocol:
 - **@ricky0123/vad-web** — Voice Activity Detection (Silero via ONNX)
 - **onnxruntime-web** — ONNX model runtime
 - **marked** — Markdown rendering for chat messages
+- **DOMPurify** — XSS protection for rendered HTML
+
+## Project Structure
+
+```
+pwa/
+├── src/
+│   ├── App.svelte        # Main application component
+│   ├── main.ts           # Entry point
+│   ├── app.css           # Global styles
+│   └── lib/
+│       ├── audio.ts      # Audio playback (Web Audio API)
+│       ├── vad.ts        # Voice Activity Detection
+│       ├── websocket.ts  # WebSocket client
+│       ├── wakelock.ts   # Screen wake lock
+│       ├── stores.ts     # Svelte stores
+│       └── types.ts      # TypeScript types
+├── public/
+│   ├── icon-192.png      # PWA icon (small)
+│   ├── icon-512.png      # PWA icon (large)
+│   └── icon-maskable-512.png  # Android adaptive icon
+├── index.html            # HTML template
+├── vite.config.ts        # Vite configuration
+├── package.json
+└── README.md
+```
 
 ## Icons
 
@@ -180,6 +211,10 @@ Placeholder icons are included. To customize:
 - Check auth token is correct
 - Check for CORS issues if not on localhost
 
+### "Rate limit exceeded"
+- Wait 1 minute before trying again
+- The server limits to 20 requests/minute per connection
+
 ### VAD not detecting speech
 - Check microphone is working
 - Speak louder/closer to mic
@@ -195,3 +230,8 @@ Placeholder icons are included. To customize:
 - Complex queries may take up to 5 minutes (depending on model and task complexity)
 - The server sends keepalive pings to prevent timeout
 - Check the "thinking" status indicator
+
+### Location not working
+- Grant location permission when prompted
+- Check browser settings for location access
+- Ensure HTTPS or localhost (location requires secure context)

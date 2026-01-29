@@ -16,6 +16,18 @@ A hands-free voice interface for Moltbot. Voice-activated PWA with automatic spe
 - **Shared Session**: Uses `agent:main:main` by default — same context as CLI
 - **Location Aware**: Optionally shares your location so you can ask about nearby places
 
+## Features
+
+- ✅ Voice Activity Detection (no push-to-talk)
+- ✅ Automatic speech transcription (Groq Whisper)
+- ✅ Real-time TTS responses (ElevenLabs or local Chatterbox)
+- ✅ Shared session with CLI (seamless keyboard ↔ voice)
+- ✅ Location-aware queries ("find me a coffee shop nearby")
+- ✅ Multi-device support (phone + laptop simultaneously)
+- ✅ XSS protection (DOMPurify)
+- ✅ Rate limiting (20 req/min per connection)
+- ✅ Request ID tracking for debugging
+
 ## Setup
 
 ### Prerequisites
@@ -36,6 +48,8 @@ npm run build
 cat > .env << 'EOF'
 EAR_AUTH_TOKEN=your-secret-token
 SESSION_KEY=agent:main:main
+# Optional: Allowed origins for CORS (comma-separated)
+# ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:5173
 # Optional: Use local Chatterbox instead of ElevenLabs
 # CHATTERBOX_URL=http://localhost:8880
 EOF
@@ -74,20 +88,38 @@ Or set up a persistent tunnel pointing to `localhost:3001`.
 | `PORT` | No | Server port (default: `3001`) |
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox server URL (e.g., `http://localhost:8880`) |
+| `ALLOWED_ORIGINS` | No | CORS allowed origins (comma-separated) |
 | `ASSISTANT_NAME` | No | Assistant name shown in PWA (default: `Moltbot`) |
 | `ASSISTANT_EMOJI` | No | Emoji shown in PWA (default: `🦞`) |
 
-## Customization
-
-The PWA fetches branding from the server's `/branding` endpoint on load. Customize via environment variables:
+## Testing
 
 ```bash
-# In server/.env
-ASSISTANT_NAME=MyBot
-ASSISTANT_EMOJI=🤖
+cd server
+
+# Unit tests (Vitest)
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # With coverage
+
+# Integration tests
+npm run test:groq     # Test Whisper transcription
+npm run test:gateway  # Test Gateway connection
+npm run test:tts      # Test ElevenLabs TTS
+npm run test:all      # Run all integration tests
 ```
 
-The PWA will display your custom name and emoji instead of the Moltbot defaults.
+## Security
+
+The proxy server includes several security features:
+
+- **Authentication**: Token required for WebSocket connections
+- **Rate Limiting**: 20 requests/minute per connection
+- **Input Validation**: Audio size limits, format validation
+- **CORS Restrictions**: Configurable allowed origins
+- **XSS Protection**: DOMPurify sanitizes all markdown
+- **Error Sanitization**: Internal errors not leaked to client
+- **Multi-Device Isolation**: Per-connection response routing
 
 ## TTS Providers
 
@@ -116,24 +148,15 @@ Set `CHATTERBOX_URL` environment variable to use a local Chatterbox server inste
 CHATTERBOX_URL=http://localhost:8880 npm start
 ```
 
-## Testing
-
-```bash
-cd server
-npm run test:groq      # Test Whisper transcription
-npm run test:gateway   # Test Gateway connection
-npm run test:tts       # Test ElevenLabs TTS
-npm run test:all       # Run all tests
-```
-
 ## How It Works
 
 1. User speaks — VAD automatically detects speech start/end
 2. Audio sent to proxy server via WebSocket
 3. Server transcribes with Groq (Whisper)
-4. Transcript sent to Moltbot Gateway (same session as CLI)
-5. Response streamed back with TTS audio
-6. PWA plays audio response
+4. Hallucination filter removes noise/junk transcriptions
+5. Transcript sent to Moltbot Gateway (same session as CLI)
+6. Response streamed back with TTS audio
+7. PWA plays audio response
 
 ### Location Awareness
 
@@ -148,12 +171,8 @@ Your assistant can use this to answer questions about nearby places, give direct
 ### TTS Mode Prefix
 
 Voice messages are prefixed to indicate TTS state:
-- **🎤** = TTS enabled
-- **📖** = TTS disabled
-
-To configure your assistant, send this message to your Moltbot:
-
-> Add a "Voice Interface" section to TOOLS.md explaining that voice messages arrive prefixed with 🎤 (TTS on — be concise, 1-3 sentences, no markdown, skip pleasantries) or 📖 (TTS off — full response OK, user is reading).
+- **🎤** = TTS enabled (be concise)
+- **📖** = TTS disabled (full response OK)
 
 ## Deployment
 
@@ -179,7 +198,6 @@ cloudflared tunnel --url http://localhost:3001
 
 **Auto-start on boot** (Linux/systemd):
 ```bash
-# Create service file
 sudo tee /etc/systemd/system/moltbot-voice-bridge.service << EOF
 [Unit]
 Description=Moltbot Voice Bridge Proxy Server
@@ -197,15 +215,35 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Enable and start
 sudo systemctl daemon-reload
 sudo systemctl enable moltbot-voice-bridge
 sudo systemctl start moltbot-voice-bridge
 ```
 
-**VPS/Cloud**: Run the server on any Node.js host. Set `VITE_PROXY_URL` when building the PWA to point to your server.
+## Project Structure
 
-**Same machine**: If PWA and proxy run on the same host, the default `ws://localhost:3001/ws` works.
+```
+the-ear/
+├── pwa/                  # Svelte PWA frontend
+│   ├── src/
+│   │   ├── App.svelte    # Main application
+│   │   └── lib/          # Audio, VAD, WebSocket utilities
+│   └── public/           # PWA assets
+├── server/               # Node.js proxy server
+│   ├── src/
+│   │   ├── index.ts      # Main server + WebSocket
+│   │   ├── config.ts     # Configuration loader
+│   │   ├── env.ts        # Environment variables
+│   │   ├── filters.ts    # Hallucination detection
+│   │   ├── groq.ts       # Whisper transcription
+│   │   ├── gateway.ts    # Moltbot Gateway client
+│   │   ├── tts.ts        # ElevenLabs TTS
+│   │   ├── tts-chatterbox.ts  # Local Chatterbox TTS
+│   │   ├── tts-provider.ts    # TTS provider interface
+│   │   └── *.test.ts     # Unit tests
+│   └── vitest.config.ts  # Test configuration
+└── README.md             # This file
+```
 
 ## License
 
