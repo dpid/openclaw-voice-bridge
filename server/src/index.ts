@@ -15,11 +15,9 @@ import { readFile } from 'node:fs/promises';
 import { loadConfig } from './config.js';
 import { transcribeAudio } from './groq.js';
 import { GatewayClient, GatewayResponse } from './gateway.js';
-// TTS Provider: Set CHATTERBOX_URL env var to use local Chatterbox, otherwise ElevenLabs
-const USE_CHATTERBOX = !!process.env.CHATTERBOX_URL;
-import { streamTTS as streamElevenLabs } from './tts.js';
-import { streamTTS as streamChatterbox } from './tts-chatterbox.js';
-const streamTTS = USE_CHATTERBOX ? streamChatterbox : streamElevenLabs;
+import { streamTTS, getTTSProvider } from './tts-provider.js';
+import { USE_CHATTERBOX } from './env.js';
+import { shouldFilter } from './filters.js';
 import type { ClientMessage, ServerMessage, ProxyConfig } from './types.js';
 
 // ============================================================
@@ -207,29 +205,10 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
     const transcript = await transcribeAudio(audioBase64, config.groqApiKey);
     console.log(`[${reqId}] Transcript: "${transcript}"`);
     
-    if (!transcript.trim()) {
-      console.log(`[${reqId}] Empty transcript, ignoring`);
-      sendMessage(ws, { type: 'audio_end' }); // Reset client state
-      return;
-    }
-    
-    // Filter common Whisper hallucinations on silence/noise
-    // Uses pattern matching for partial matches and checks minimum length
-    const hallucinationPatterns = [
-      /^thanks?\s*(for\s+watching)?$/i,
-      /^(please\s+)?subscribe/i,
-      /^like\s+and\s+subscribe/i,
-      /^see\s+you\s+(next\s+time|later|soon)/i,
-      /^bye+$/i,
-      /^(uh+|um+|hmm+)$/i,
-      /^\.+$/,  // Just periods
-    ];
-    const normalized = transcript.trim().replace(/[.!?,]/g, '');
-    const isHallucination = hallucinationPatterns.some(p => p.test(normalized));
-    const isTooShort = normalized.length < 2;  // Single char is likely noise
-    
-    if (isHallucination || isTooShort) {
-      console.log(`[${reqId}] Filtered ${isTooShort ? 'noise' : 'hallucination'}: "${transcript}"`);
+    // Filter empty, too short, or hallucinated transcripts
+    const filterResult = shouldFilter(transcript);
+    if (filterResult.filtered) {
+      console.log(`[${reqId}] Filtered (${filterResult.reason}): "${transcript}"`);
       sendMessage(ws, { type: 'audio_end' }); // Reset client state
       return;
     }
@@ -504,6 +483,10 @@ wss.on('connection', (ws, req) => {
 
 async function main(): Promise<void> {
   console.log('\n🦻 Moltbot Voice Bridge - Proxy Server\n');
+  
+  // Log TTS provider
+  const ttsProvider = getTTSProvider();
+  console.log(`   TTS Provider: ${ttsProvider.name}`);
   
   // Connect to gateway
   try {
