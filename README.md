@@ -48,7 +48,7 @@ npm run build
 
 # Create .env file
 cat > .env << 'EOF'
-EAR_AUTH_TOKEN=your-secret-token
+MVB_AUTH_TOKEN=your-secret-token
 SESSION_KEY=agent:main:main
 # Optional: Allowed origins for CORS (comma-separated)
 # ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:5173
@@ -87,7 +87,7 @@ Or set up a persistent tunnel pointing to `localhost:3001`.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `EAR_AUTH_TOKEN` | Yes | Auth token for PWA connections |
+| `MVB_AUTH_TOKEN` | Yes | Auth token for PWA connections |
 | `SESSION_KEY` | No | Moltbot session key (default: `agent:main:main`) |
 | `PORT` | No | Server port (default: `3001`) |
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
@@ -243,7 +243,7 @@ sudo systemctl start moltbot-voice-bridge
 ## Project Structure
 
 ```
-the-ear/
+moltbot-voice-bridge/
 ├── pwa/                  # Svelte PWA frontend
 │   ├── src/
 │   │   ├── App.svelte    # Main application

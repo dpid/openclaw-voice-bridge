@@ -26,7 +26,7 @@
   const isProxyConfigured = !!import.meta.env.VITE_PROXY_URL;
   
   // Auth token from localStorage (user enters once)
-  const AUTH_STORAGE_KEY = 'ear_auth_token';
+  const AUTH_STORAGE_KEY = 'mvb_auth_token';
   let authToken = localStorage.getItem(AUTH_STORAGE_KEY) || '';
   let showAuthPrompt = !authToken;
 

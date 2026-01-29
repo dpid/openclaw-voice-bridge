@@ -85,9 +85,9 @@ export function loadConfig(): ProxyConfig {
   }
 
   // Auth token for PWA connections (required!)
-  const authToken = process.env.EAR_AUTH_TOKEN || '';
+  const authToken = process.env.MVB_AUTH_TOKEN || '';
   if (!authToken) {
-    throw new Error('EAR_AUTH_TOKEN environment variable is required');
+    throw new Error('MVB_AUTH_TOKEN environment variable is required');
   }
 
   // Branding (env vars with Moltbot defaults)

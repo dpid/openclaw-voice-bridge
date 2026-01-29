@@ -20,7 +20,7 @@ export const ENV = {
   PORT: parseInt(getEnv('PORT', '3001')!, 10),
   
   // Auth
-  AUTH_TOKEN: getEnv('EAR_AUTH_TOKEN'),
+  AUTH_TOKEN: getEnv('MVB_AUTH_TOKEN'),
   
   // API Keys (can also come from moltbot.json)
   GROQ_API_KEY: getEnv('GROQ_API_KEY'),

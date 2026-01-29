@@ -20,7 +20,7 @@ A voice-first Progressive Web App for hands-free conversation with your Moltbot 
 - **Proxy Server** — The backend proxy must be running (default: `localhost:3001`)
 - **Modern Browser** — Chrome, Safari, Firefox with WebRTC support
 - **Microphone** — Permission will be requested on first use
-- **Auth Token** — You'll be prompted to enter your `EAR_AUTH_TOKEN` on first use
+- **Auth Token** — You'll be prompted to enter your `MVB_AUTH_TOKEN` on first use
 
 ## Development
 
@@ -85,7 +85,7 @@ If `VITE_PROXY_URL` is not set, defaults to `ws://localhost:3001/ws` for local d
 
 3. **Open in browser**: http://localhost:5173
 
-4. **Enter auth token** when prompted (same as `EAR_AUTH_TOKEN` on server)
+4. **Enter auth token** when prompted (same as `MVB_AUTH_TOKEN` on server)
 
 5. **Grant microphone permission** when prompted
 
