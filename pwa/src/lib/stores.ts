@@ -28,9 +28,9 @@ export interface Branding {
 }
 
 export const branding = writable<Branding>({
-  name: 'Moltbot',
-  emoji: '🦞',
-  description: 'Hands-free voice interface for Moltbot',
+  name: import.meta.env.VITE_BOT_NAME || 'Moltbot',
+  emoji: import.meta.env.VITE_BOT_EMOJI || '🦞',
+  description: import.meta.env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for Moltbot',
 });
 
 // Audio is unlocked via unlockAudioContext() in audio.ts when session starts

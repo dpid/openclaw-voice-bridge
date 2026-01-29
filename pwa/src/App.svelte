@@ -64,7 +64,11 @@
   let currentResponse = '';
   let currentError = '';
   let isConnected = false;
-  let currentBranding: Branding = { name: 'Moltbot', emoji: '🦞', description: 'Hands-free voice interface for Moltbot' };
+  let currentBranding: Branding = { 
+    name: import.meta.env.VITE_BOT_NAME || 'Moltbot', 
+    emoji: import.meta.env.VITE_BOT_EMOJI || '🦞', 
+    description: import.meta.env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for Moltbot' 
+  };
 
   // Subscribe to stores
   appState.subscribe(v => currentState = v);

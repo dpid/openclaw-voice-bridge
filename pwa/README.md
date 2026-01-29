@@ -52,13 +52,24 @@ npm run preview
 
 ## Configuration
 
-Set the proxy URL via environment variable when building:
+Create a `.env` file (see `.env.example`) or set environment variables when building:
 
 ```bash
-VITE_PROXY_URL=wss://your-proxy.example.com/ws npm run build
+# Required: proxy server WebSocket URL
+VITE_PROXY_URL=wss://your-proxy.example.com/ws
+
+# Optional: custom branding
+VITE_BOT_NAME=Jarvis
+VITE_BOT_EMOJI=🤖
+VITE_BOT_DESCRIPTION=Hands-free voice interface for Jarvis
 ```
 
-If not set, defaults to `ws://localhost:3001/ws` for local development.
+Then build:
+```bash
+npm run build
+```
+
+If `VITE_PROXY_URL` is not set, defaults to `ws://localhost:3001/ws` for local development.
 
 ## Testing
 

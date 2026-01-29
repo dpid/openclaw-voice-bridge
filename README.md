@@ -1,6 +1,8 @@
-# Moltbot Voice Bridge 🦞
+# Moltbot Voice Bridge
 
 A hands-free voice interface for Moltbot. Voice-activated PWA with automatic speech detection — just talk naturally. Shares context with your CLI session for seamless keyboard ↔ voice handoff.
+
+Fully customizable branding via environment variables — name it after your own assistant.
 
 ## Architecture
 
@@ -81,6 +83,8 @@ Or set up a persistent tunnel pointing to `localhost:3001`.
 
 ## Environment Variables
 
+### Server (`server/.env`)
+
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `EAR_AUTH_TOKEN` | Yes | Auth token for PWA connections |
@@ -89,8 +93,17 @@ Or set up a persistent tunnel pointing to `localhost:3001`.
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox server URL (e.g., `http://localhost:8880`) |
 | `ALLOWED_ORIGINS` | No | CORS allowed origins (comma-separated) |
-| `ASSISTANT_NAME` | No | Assistant name shown in PWA (default: `Moltbot`) |
-| `ASSISTANT_EMOJI` | No | Emoji shown in PWA (default: `🦞`) |
+| `ASSISTANT_NAME` | No | Assistant name shown in responses (default: `Moltbot`) |
+| `ASSISTANT_EMOJI` | No | Emoji shown in responses (default: `🦞`) |
+
+### PWA (`pwa/.env`)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_PROXY_URL` | Yes | WebSocket URL for proxy server |
+| `VITE_BOT_NAME` | No | Bot name in UI and PWA manifest (default: `Moltbot`) |
+| `VITE_BOT_EMOJI` | No | Bot emoji in UI (default: `🦞`) |
+| `VITE_BOT_DESCRIPTION` | No | Description in UI/manifest (default: `Hands-free voice interface for Moltbot`) |
 
 ## Testing
 
@@ -178,13 +191,20 @@ Voice messages are prefixed to indicate TTS state:
 
 ### PWA (Frontend)
 
-**GitHub Pages** (easiest):
+Build and serve the `pwa/dist/` folder from any static host:
+
 ```bash
-# Fork the repo, enable GitHub Pages on main branch
-# PWA auto-deploys via GitHub Actions
+cd pwa
+npm run build
+# Serve dist/ via nginx, Cloudflare Pages, Netlify, Vercel, or a simple static server
 ```
 
-**Self-hosted**: Serve the `pwa/dist/` folder from any static host (Netlify, Vercel, Cloudflare Pages, etc.)
+**GitHub Pages**: Build locally with your `.env` vars, then deploy the `dist/` folder to GitHub Pages (or add your own CI workflow).
+
+**Cloudflare Tunnel**: A simple Python server works:
+```bash
+python3 -m http.server 3002 -d dist
+```
 
 ### Proxy Server (Backend)
 

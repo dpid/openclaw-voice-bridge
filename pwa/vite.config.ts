@@ -1,25 +1,29 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
-  // Base path for GitHub Pages - uses repo name
-  base: process.env.GITHUB_ACTIONS ? '/moltbot-voice-bridge/' : '/',
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const botName = env.VITE_BOT_NAME || 'Moltbot';
+  const botDescription = env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for Moltbot';
+  
+  return {
+  base: '/',
   plugins: [
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'],
       manifest: {
-        name: 'Moltbot Voice Bridge',
-        short_name: 'Moltbot Voice Bridge',
-        description: 'Hands-free voice interface for Moltbot',
+        name: `${botName} Voice Bridge`,
+        short_name: `${botName} Voice Bridge`,
+        description: botDescription,
         theme_color: '#1a1a2e',
         background_color: '#1a1a2e',
         display: 'standalone',
         orientation: 'portrait',
-        scope: process.env.GITHUB_ACTIONS ? '/moltbot-voice-bridge/' : '/',
-        start_url: process.env.GITHUB_ACTIONS ? '/moltbot-voice-bridge/' : '/',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'icon-192.png',
@@ -53,4 +57,4 @@ export default defineConfig({
     port: 5173,
     allowedHosts: ['localhost', '.ngrok-free.dev', '.trycloudflare.com'],
   },
-});
+}});
