@@ -82,7 +82,18 @@ app.get('/branding', (_req, res) => {
 // ============================================================
 
 let gatewayClient: GatewayClient | null = null;
-let pendingResponseCallback: ((response: GatewayResponse) => void) | null = null;
+
+// Per-connection pending responses (queue for FIFO ordering since gateway processes in order)
+interface PendingRequest {
+  ws: WebSocket;
+  callback: (response: GatewayResponse) => void;
+  reject: (err: Error) => void;
+  timeout: NodeJS.Timeout;
+}
+const pendingRequests: PendingRequest[] = [];
+
+// Per-connection keepalive intervals
+const keepaliveIntervals = new Map<WebSocket, NodeJS.Timeout>();
 
 async function initGateway(): Promise<void> {
   gatewayClient = new GatewayClient({
@@ -91,9 +102,13 @@ async function initGateway(): Promise<void> {
     sessionKey: config.sessionKey,
     onResponse: (response) => {
       console.log(`[Gateway] Response received (${response.text.length} chars, ${response.mediaUrls?.length || 0} media)`);
-      if (pendingResponseCallback) {
-        pendingResponseCallback(response);
-        pendingResponseCallback = null;
+      // Deliver to first pending request (FIFO - gateway processes in order)
+      const pending = pendingRequests.shift();
+      if (pending) {
+        clearTimeout(pending.timeout);
+        pending.callback(response);
+      } else {
+        console.warn('[Gateway] Response received but no pending request');
       }
     },
     onConnect: () => {
@@ -116,49 +131,57 @@ async function initGateway(): Promise<void> {
 /**
  * Send message to gateway and wait for response
  */
-async function sendToGateway(message: string): Promise<GatewayResponse> {
+async function sendToGateway(ws: WebSocket, message: string): Promise<GatewayResponse> {
   if (!gatewayClient?.isConnected()) {
     throw new Error('Gateway not connected');
   }
 
   return new Promise((resolve, reject) => {
-    // Set up response callback
-    const timeout = setTimeout(() => {
-      pendingResponseCallback = null;
-      reject(new Error('Gateway response timeout (5 min)'));
-    }, GATEWAY_TIMEOUT_MS);
-
-    pendingResponseCallback = (response) => {
-      clearTimeout(timeout);
-      resolve(response);
+    const pendingRequest: PendingRequest = {
+      ws,
+      callback: resolve,
+      reject,
+      timeout: setTimeout(() => {
+        // Remove from queue on timeout
+        const idx = pendingRequests.indexOf(pendingRequest);
+        if (idx >= 0) pendingRequests.splice(idx, 1);
+        reject(new Error('Gateway response timeout (5 min)'));
+      }, GATEWAY_TIMEOUT_MS),
     };
+
+    // Add to queue
+    pendingRequests.push(pendingRequest);
 
     // Send message
     gatewayClient!.sendMessage(message).catch((err) => {
-      clearTimeout(timeout);
-      pendingResponseCallback = null;
+      clearTimeout(pendingRequest.timeout);
+      const idx = pendingRequests.indexOf(pendingRequest);
+      if (idx >= 0) pendingRequests.splice(idx, 1);
       reject(err);
     });
   });
 }
 
 // Keepalive ping during long waits (prevents WebSocket timeout)
-let keepaliveInterval: ReturnType<typeof setInterval> | null = null;
-
 function startKeepalive(ws: WebSocket): void {
-  stopKeepalive();
-  keepaliveInterval = setInterval(() => {
-    if (ws.readyState === WebSocket.OPEN && pendingResponseCallback) {
-      // Send a status update to keep client informed during long waits
-      sendMessage(ws, { type: 'status', state: 'thinking' });
+  stopKeepalive(ws);
+  const interval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      // Check if this connection has a pending request
+      const hasPending = pendingRequests.some(p => p.ws === ws);
+      if (hasPending) {
+        sendMessage(ws, { type: 'status', state: 'thinking' });
+      }
     }
   }, KEEPALIVE_INTERVAL_MS);
+  keepaliveIntervals.set(ws, interval);
 }
 
-function stopKeepalive(): void {
-  if (keepaliveInterval) {
-    clearInterval(keepaliveInterval);
-    keepaliveInterval = null;
+function stopKeepalive(ws: WebSocket): void {
+  const interval = keepaliveIntervals.get(ws);
+  if (interval) {
+    clearInterval(interval);
+    keepaliveIntervals.delete(ws);
   }
 }
 
@@ -225,9 +248,9 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
     startKeepalive(ws);
     let response: GatewayResponse;
     try {
-      response = await sendToGateway(message);
+      response = await sendToGateway(ws, message);
     } finally {
-      stopKeepalive();
+      stopKeepalive(ws);
     }
     console.log(`[Pipeline] Response: "${response.text.slice(0, 100)}..." mediaUrls:`, response.mediaUrls);
     
@@ -450,6 +473,15 @@ wss.on('connection', (ws, req) => {
 
   ws.on('close', () => {
     clearTimeout(authTimeout);
+    // Clean up any pending requests for this connection
+    for (let i = pendingRequests.length - 1; i >= 0; i--) {
+      if (pendingRequests[i].ws === ws) {
+        clearTimeout(pendingRequests[i].timeout);
+        pendingRequests.splice(i, 1);
+      }
+    }
+    // Clean up keepalive
+    stopKeepalive(ws);
     console.log(`[WS] Client disconnected from ${clientIp}`);
   });
 
