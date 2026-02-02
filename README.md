@@ -7,10 +7,10 @@ Fully customizable branding via environment variables.
 ## Architecture
 
 ```
-┌─────────────────┐     WebRTC        ┌─────────────────┐     HTTP/WS      ┌─────────────────┐
+┌─────────────────┐     WebRTC        ┌─────────────────┐     HTTP/WS      ┌──────────────────┐
 │   Web Client    │ <───────────────> │  Pipecat Server │ <─────────────── │ OpenClaw Gateway │
-│  Voice capture  │                   │  STT + LLM + TTS│                  │    AI session   │
-└─────────────────┘                   └─────────────────┘                  └─────────────────┘
+│  Voice capture  │                   │  STT + LLM + TTS│                  │    AI session    │
+└─────────────────┘                   └─────────────────┘                  └──────────────────┘
 ```
 
 - **Web Client**: Captures audio, sends via WebRTC, plays TTS responses
