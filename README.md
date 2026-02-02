@@ -2,14 +2,12 @@
 
 A hands-free voice interface for OpenClaw. WebRTC-based real-time conversation using Pipecat for audio pipeline management. Shares context with your CLI session for seamless keyboard <-> voice handoff.
 
-Fully customizable branding via environment variables.
-
 ## Architecture
 
 ```
 ┌─────────────────┐     WebRTC        ┌─────────────────┐     HTTP/WS      ┌──────────────────┐
 │   Web Client    │ <───────────────> │  Pipecat Server │ <─────────────── │ OpenClaw Gateway │
-│  Voice capture  │                   │  STT + LLM + TTS│                  │    AI session    │
+│  Voice capture  │                   │    STT + TTS    │                  │   LLM session    │
 └─────────────────┘                   └─────────────────┘                  └──────────────────┘
 ```
 
@@ -29,6 +27,7 @@ Fully customizable branding via environment variables.
 - Hallucination filtering (removes Whisper noise)
 - Response cleaning (strips markdown for speech)
 - Interrupt support (speak while response is playing)
+- Customizable branding via environment variables
 
 ## Setup
 
@@ -185,6 +184,7 @@ openclaw-voice-bridge/
 ├── static/               # Web client
 │   └── index.html
 ├── tests/                # Unit tests
+├── test_gateway.py       # Gateway connection test
 └── README.md
 ```
 
