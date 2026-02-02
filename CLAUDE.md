@@ -1,4 +1,4 @@
-# The Ear - Voice Bridge for OpenClaw
+# OpenClaw Voice Bridge
 
 Hands-free voice interface using Pipecat for real-time WebRTC audio.
 

@@ -57,7 +57,7 @@ def check_rate_limit(ip: str) -> bool:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global config
-    print("\n The Ear - Voice Bridge (Pipecat)\n")
+    print("\n OpenClaw Voice Bridge (Pipecat)\n")
 
     try:
         config = load_config()
