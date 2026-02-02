@@ -1,6 +1,6 @@
-# Moltbot Voice Bridge - Voice PWA
+# OpenClaw Voice Bridge - Voice PWA
 
-A voice-first Progressive Web App for hands-free conversation with your Moltbot assistant.
+A voice-first Progressive Web App for hands-free conversation with your OpenClaw assistant.
 
 ## Features
 
@@ -20,7 +20,7 @@ A voice-first Progressive Web App for hands-free conversation with your Moltbot 
 - **Proxy Server** — The backend proxy must be running (default: `localhost:3001`)
 - **Modern Browser** — Chrome, Safari, Firefox with WebRTC support
 - **Microphone** — Permission will be requested on first use
-- **Auth Token** — You'll be prompted to enter your `MVB_AUTH_TOKEN` on first use
+- **Auth Token** — You'll be prompted to enter your `OC_AUTH_TOKEN` on first use
 
 ## Development
 
@@ -85,7 +85,7 @@ If `VITE_PROXY_URL` is not set, defaults to `ws://localhost:3001/ws` for local d
 
 3. **Open in browser**: http://localhost:5173
 
-4. **Enter auth token** when prompted (same as `MVB_AUTH_TOKEN` on server)
+4. **Enter auth token** when prompted (same as `OC_AUTH_TOKEN` on server)
 
 5. **Grant microphone permission** when prompted
 
@@ -164,7 +164,7 @@ The PWA connects to the proxy server and uses this protocol:
               ▼
 ┌─────────────────────────────────────────┐
 │         Proxy Server (Node.js)          │
-│  Groq → Moltbot Gateway → TTS           │
+│  Groq → OpenClaw Gateway → TTS          │
 └─────────────────────────────────────────┘
 ```
 

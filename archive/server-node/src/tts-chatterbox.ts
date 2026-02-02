@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - Chatterbox TTS
- * 
+ * OpenClaw Voice Bridge - Chatterbox TTS
+ *
  * Text-to-speech using local Chatterbox server (OpenAI-compatible API)
  */
 

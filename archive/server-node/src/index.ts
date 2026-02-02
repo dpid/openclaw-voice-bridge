@@ -1,9 +1,9 @@
 /**
- * Moltbot Voice Bridge - Proxy Server
- * 
+ * OpenClaw Voice Bridge - Proxy Server
+ *
  * Express + WebSocket server that bridges the PWA to:
  * - Groq (transcription)
- * - Moltbot Gateway (chat)
+ * - OpenClaw Gateway (chat)
  * - ElevenLabs or Chatterbox (TTS)
  */
 
@@ -46,7 +46,6 @@ const AUTH_TIMEOUT_MS = 10 * 1000; // 10 seconds
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:5173',
   'http://localhost:4173',
-  'https://dpid.github.io',
 ];
 
 app.use((req, res, next) => {
@@ -253,15 +252,23 @@ async function handleAudioMessage(ws: WebSocket, audioBase64: string, location?:
       // We have text - generate our own TTS for perfect sync
       const spokenText = response.text
         .replace(/^>\s*🎤?\s*"[^"]*"\n*/gm, '')  // Remove voice transcription echo
+        .replace(/```[\s\S]*?```/g, ' (code block omitted) ')  // Remove code blocks
+        .replace(/\|[^\n]+\|/g, '')         // Remove table rows
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // [link text](url) → link text
+        .replace(/https?:\/\/\S+/g, '')     // Remove raw URLs
         .replace(/\*\*([^*]+)\*\*/g, '$1')  // **bold** → bold
         .replace(/\*([^*]+)\*/g, '$1')      // *italic* → italic
         .replace(/`([^`]+)`/g, '$1')        // `code` → code
         .replace(/#{1,6}\s*/g, '')          // headers
+        .replace(/^[-*]\s+/gm, '')          // bullet points
+        .replace(/^\d+\.\s+/gm, '')         // numbered lists
         .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')  // emojis (misc symbols, emoticons)
         .replace(/[\u{2600}-\u{26FF}]/gu, '')   // misc symbols
         .replace(/[\u{2700}-\u{27BF}]/gu, '')   // dingbats
         .replace(/[\u{FE00}-\u{FE0F}]/gu, '')   // variation selectors
         .replace(/[\u{200D}]/gu, '')            // zero-width joiner
+        .replace(/\n{2,}/g, '. ')           // Multiple newlines → pause
+        .replace(/\n/g, ' ')                // Single newlines → space
         .trim();
       
       if (spokenText) {
@@ -482,7 +489,7 @@ wss.on('connection', (ws, req) => {
 // ============================================================
 
 async function main(): Promise<void> {
-  console.log('\n🦻 Moltbot Voice Bridge - Proxy Server\n');
+  console.log('\n🦻 OpenClaw Voice Bridge - Proxy Server\n');
   
   // Log TTS provider
   const ttsProvider = getTTSProvider();

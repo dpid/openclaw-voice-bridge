@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - ElevenLabs TTS
- * 
+ * OpenClaw Voice Bridge - ElevenLabs TTS
+ *
  * Text-to-speech using ElevenLabs streaming API
  */
 

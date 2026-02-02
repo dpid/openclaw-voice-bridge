@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - Configuration Loader
- * 
+ * OpenClaw Voice Bridge - Configuration Loader
+ *
  * Loads config from environment and ~/.moltbot/moltbot.json
  */
 
@@ -85,13 +85,13 @@ export function loadConfig(): ProxyConfig {
   }
 
   // Auth token for PWA connections (required!)
-  const authToken = process.env.MVB_AUTH_TOKEN || '';
+  const authToken = process.env.OC_AUTH_TOKEN || '';
   if (!authToken) {
-    throw new Error('MVB_AUTH_TOKEN environment variable is required');
+    throw new Error('OC_AUTH_TOKEN environment variable is required');
   }
 
-  // Branding (env vars with Moltbot defaults)
-  const assistantName = process.env.ASSISTANT_NAME || 'Moltbot';
+  // Branding (env vars with OpenClaw defaults)
+  const assistantName = process.env.ASSISTANT_NAME || 'OpenClaw';
   const assistantEmoji = process.env.ASSISTANT_EMOJI || '🦞';
 
   // Chatterbox voice (only used when CHATTERBOX_URL is set)
@@ -100,7 +100,7 @@ export function loadConfig(): ProxyConfig {
   const config: ProxyConfig = {
     port: parseInt(process.env.PORT || '3001', 10),
     groqApiKey,
-    gatewayUrl: `ws://localhost:${gatewayPort}`,
+    gatewayUrl: process.env.GATEWAY_URL || `ws://localhost:${gatewayPort}`,
     gatewayToken,
     elevenLabsApiKey,
     elevenLabsVoiceId,

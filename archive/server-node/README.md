@@ -1,6 +1,6 @@
-# Moltbot Voice Bridge - Proxy Server
+# OpenClaw Voice Bridge - Proxy Server
 
-Voice PWA proxy server that bridges the PWA client to Moltbot Gateway, Groq transcription, and TTS (ElevenLabs or Chatterbox).
+Voice PWA proxy server that bridges the PWA client to OpenClaw Gateway, Groq transcription, and TTS (ElevenLabs or Chatterbox).
 
 ## Architecture
 
@@ -25,7 +25,7 @@ npm run build
 
 # Create .env file
 cat > .env << 'EOF'
-MVB_AUTH_TOKEN=your-secret-token
+OC_AUTH_TOKEN=your-secret-token
 SESSION_KEY=agent:main:main
 # Optional: CORS allowed origins (comma-separated)
 # ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:5173
@@ -49,17 +49,17 @@ npm start
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `MVB_AUTH_TOKEN` | Yes | Auth token for PWA connections |
-| `SESSION_KEY` | No | Moltbot session key (default: `agent:main:main`) |
+| `OC_AUTH_TOKEN` | Yes | Auth token for PWA connections |
+| `SESSION_KEY` | No | OpenClaw session key (default: `agent:main:main`) |
 | `PORT` | No | Server port (default: `3001`) |
 | `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox TTS URL (e.g., `http://localhost:8880`) |
 | `CHATTERBOX_VOICE` | No | Chatterbox voice name (default: `Eli`) |
 | `ALLOWED_ORIGINS` | No | CORS allowed origins (comma-separated) |
-| `ASSISTANT_NAME` | No | Assistant name for branding (default: `Moltbot`) |
+| `ASSISTANT_NAME` | No | Assistant name for branding (default: `OpenClaw`) |
 | `ASSISTANT_EMOJI` | No | Emoji for branding (default: `🦞`) |
 
-### Moltbot Config
+### OpenClaw Config
 
 The server reads additional configuration from `~/.moltbot/moltbot.json`:
 
@@ -114,7 +114,7 @@ Chatterbox returns full audio (no streaming), but it's free and runs locally.
 
 The TTS provider is selected automatically at startup and logged:
 ```
-🦻 Moltbot Voice Bridge - Proxy Server
+🦻 OpenClaw Voice Bridge - Proxy Server
 
    TTS Provider: ElevenLabs
 ```
@@ -181,7 +181,7 @@ Returns branding configuration for the PWA.
 
 ```bash
 curl http://localhost:3001/branding
-# {"name":"Moltbot","emoji":"🦞","description":"Hands-free voice interface for Moltbot"}
+# {"name":"OpenClaw","emoji":"🦞","description":"Hands-free voice interface for OpenClaw"}
 ```
 
 ## Development
@@ -221,7 +221,7 @@ server/
 │   ├── filters.ts        # Hallucination/noise detection
 │   ├── filters.test.ts   # Unit tests for filters
 │   ├── groq.ts           # Groq Whisper transcription
-│   ├── gateway.ts        # Moltbot Gateway WebSocket client
+│   ├── gateway.ts        # OpenClaw Gateway WebSocket client
 │   ├── tts.ts            # ElevenLabs TTS (streaming)
 │   ├── tts-chatterbox.ts # Chatterbox TTS (local)
 │   ├── tts-provider.ts   # TTS provider interface
@@ -237,7 +237,7 @@ server/
 
 Default session key: `agent:main:main`
 
-This shares context with the Moltbot CLI, enabling seamless keyboard ↔ voice handoff. Override with `SESSION_KEY` env var.
+This shares context with the OpenClaw CLI, enabling seamless keyboard ↔ voice handoff. Override with `SESSION_KEY` env var.
 
 ## TTS Mode Prefix
 
@@ -245,7 +245,7 @@ Voice messages are prefixed to indicate TTS state:
 - **🎤** = TTS enabled (be concise)
 - **📖** = TTS disabled (full response OK)
 
-## Required Moltbot Config
+## Required OpenClaw Config
 
 For the proxy to receive text (not just TTS audio), disable gateway TTS:
 

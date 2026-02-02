@@ -1,5 +1,5 @@
 /**
- * Moltbot Voice Bridge - Svelte Stores
+ * OpenClaw Voice Bridge - Svelte Stores
  */
 
 import { writable } from 'svelte/store';
@@ -28,9 +28,9 @@ export interface Branding {
 }
 
 export const branding = writable<Branding>({
-  name: import.meta.env.VITE_BOT_NAME || 'Moltbot',
+  name: import.meta.env.VITE_BOT_NAME || 'OpenClaw',
   emoji: import.meta.env.VITE_BOT_EMOJI || '🦞',
-  description: import.meta.env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for Moltbot',
+  description: import.meta.env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for OpenClaw',
 });
 
 // Audio is unlocked via unlockAudioContext() in audio.ts when session starts

@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - Type Definitions
- * 
+ * OpenClaw Voice Bridge - Type Definitions
+ *
  * Message protocol between PWA client and proxy server.
  */
 

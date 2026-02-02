@@ -1,7 +1,7 @@
 {
-  "name": "moltbot-voice-bridge-server",
+  "name": "openclaw-voice-bridge-server",
   "version": "1.0.0",
-  "description": "Voice PWA proxy server for Moltbot Voice Bridge - bridges PWA to Clawdbot Gateway",
+  "description": "Voice PWA proxy server for OpenClaw Voice Bridge - bridges PWA to OpenClaw Gateway",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

@@ -1,5 +1,5 @@
 /**
- * Moltbot Voice Bridge - Filter Tests
+ * OpenClaw Voice Bridge - Filter Tests
  */
 
 import { describe, it, expect } from 'vitest';

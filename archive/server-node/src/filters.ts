@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - Audio Filters
- * 
+ * OpenClaw Voice Bridge - Audio Filters
+ *
  * Filters for detecting hallucinations and noise in transcriptions.
  */
 

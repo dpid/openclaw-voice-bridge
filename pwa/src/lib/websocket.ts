@@ -1,5 +1,5 @@
 /**
- * Moltbot Voice Bridge - WebSocket Client
+ * OpenClaw Voice Bridge - WebSocket Client
  * Connects to the proxy server and handles message protocol
  */
 

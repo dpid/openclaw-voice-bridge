@@ -26,7 +26,7 @@
   const isProxyConfigured = !!import.meta.env.VITE_PROXY_URL;
   
   // Auth token from localStorage (user enters once)
-  const AUTH_STORAGE_KEY = 'mvb_auth_token';
+  const AUTH_STORAGE_KEY = 'oc_auth_token';
   let authToken = localStorage.getItem(AUTH_STORAGE_KEY) || '';
   let showAuthPrompt = !authToken;
 
@@ -64,10 +64,10 @@
   let currentResponse = '';
   let currentError = '';
   let isConnected = false;
-  let currentBranding: Branding = { 
-    name: import.meta.env.VITE_BOT_NAME || 'Moltbot', 
-    emoji: import.meta.env.VITE_BOT_EMOJI || '🦞', 
-    description: import.meta.env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for Moltbot' 
+  let currentBranding: Branding = {
+    name: import.meta.env.VITE_BOT_NAME || 'OpenClaw',
+    emoji: import.meta.env.VITE_BOT_EMOJI || '🦞',
+    description: import.meta.env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for OpenClaw'
   };
 
   // Subscribe to stores

@@ -1,7 +1,7 @@
 /**
- * Moltbot Voice Bridge - Gateway Client
- * 
- * WebSocket client for Clawdbot Gateway communication
+ * OpenClaw Voice Bridge - Gateway Client
+ *
+ * WebSocket client for OpenClaw Gateway communication
  */
 
 import { randomUUID } from 'node:crypto';
@@ -37,8 +37,8 @@ export interface GatewayClientOptions {
 
 /**
  * Gateway WebSocket Client
- * 
- * Connects to the Clawdbot gateway and handles chat communication.
+ *
+ * Connects to the OpenClaw gateway and handles chat communication.
  */
 export class GatewayClient {
   private ws: WebSocket | null = null;
@@ -321,7 +321,7 @@ export class GatewayClient {
       client: {
         // Must be a known gateway client ID
         id: 'gateway-client',
-        displayName: 'Moltbot Voice Bridge Proxy',
+        displayName: 'OpenClaw Voice Bridge Proxy',
         version: '1.0.0',
         platform: process.platform,
         mode: 'backend',

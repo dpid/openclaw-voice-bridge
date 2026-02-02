@@ -4,8 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const botName = env.VITE_BOT_NAME || 'Moltbot';
-  const botDescription = env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for Moltbot';
+  const botName = env.VITE_BOT_NAME || 'OpenClaw';
+  const botDescription = env.VITE_BOT_DESCRIPTION || 'Hands-free voice interface for OpenClaw';
   
   return {
   base: '/',

@@ -1,5 +1,5 @@
 /**
- * Moltbot Voice Bridge - Wake Lock
+ * OpenClaw Voice Bridge - Wake Lock
  * Keeps the screen on during a voice session
  */
 

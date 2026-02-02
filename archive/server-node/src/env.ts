@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - Environment Variables
- * 
+ * OpenClaw Voice Bridge - Environment Variables
+ *
  * Centralized environment variable management.
  * All env vars are loaded once at startup.
  */
@@ -20,7 +20,7 @@ export const ENV = {
   PORT: parseInt(getEnv('PORT', '3001')!, 10),
   
   // Auth
-  AUTH_TOKEN: getEnv('MVB_AUTH_TOKEN'),
+  AUTH_TOKEN: getEnv('OC_AUTH_TOKEN'),
   
   // API Keys (can also come from moltbot.json)
   GROQ_API_KEY: getEnv('GROQ_API_KEY'),
@@ -33,7 +33,7 @@ export const ENV = {
   SESSION_KEY: getEnv('SESSION_KEY', 'agent:main:main'),
   
   // Branding
-  ASSISTANT_NAME: getEnv('ASSISTANT_NAME', 'Moltbot'),
+  ASSISTANT_NAME: getEnv('ASSISTANT_NAME', 'OpenClaw'),
   ASSISTANT_EMOJI: getEnv('ASSISTANT_EMOJI', '🦞'),
   
   // CORS

@@ -1,5 +1,5 @@
 /**
- * Moltbot Voice Bridge - Type Definitions
+ * OpenClaw Voice Bridge - Type Definitions
  */
 
 // UI States

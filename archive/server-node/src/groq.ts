@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - Groq Transcription
- * 
+ * OpenClaw Voice Bridge - Groq Transcription
+ *
  * Transcribes audio using Groq's Whisper API
  */
 

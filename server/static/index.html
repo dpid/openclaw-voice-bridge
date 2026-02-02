@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ear - Voice Bridge</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 4rem);
+            min-height: 500px;
+        }
+
+        .branding {
+            margin-bottom: 1.5rem;
+        }
+
+        .branding-emoji {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.875rem;
+        }
+
+        .status-bar {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #444;
+            flex-shrink: 0;
+        }
+
+        .status-dot.connected { background: #22c55e; }
+        .status-dot.connecting { background: #eab308; animation: pulse 1s infinite; }
+        .status-dot.error { background: #ef4444; }
+
+        .status-info {
+            text-align: left;
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            color: #ccc;
+        }
+
+        .state-text {
+            font-size: 0.75rem;
+            margin-top: 0.125rem;
+        }
+
+        .state-text.listening { color: #3b82f6; }
+        .state-text.recording { color: #ef4444; }
+        .state-text.processing { color: #eab308; }
+        .state-text.speaking { color: #22c55e; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mute-controls {
+            display: none;
+            gap: 0.5rem;
+        }
+
+        .mute-controls.visible {
+            display: flex;
+        }
+
+        .mute-btn {
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .mute-btn:hover {
+            background: #444;
+        }
+
+        .mute-btn.muted {
+            background: #dc2626;
+        }
+
+        .mute-btn:not(.muted) {
+            background: #166534;
+        }
+
+        .mute-btn:not(.muted):hover {
+            background: #15803d;
+        }
+
+        .mute-btn-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.125rem;
+        }
+
+        .mute-btn-label {
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .chat-container {
+            background: #1a1a1a;
+            border-radius: 12px;
+            flex-grow: 1;
+            min-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .chat-empty {
+            color: #666;
+            text-align: center;
+            margin: auto;
+            font-size: 0.875rem;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 0.625rem 0.875rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: #2563eb;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            background: #333;
+            color: #eee;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.streaming::after {
+            content: '\25CF';
+            animation: blink 1s infinite;
+            margin-left: 0.25rem;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .auth-form {
+            margin-bottom: 1rem;
+        }
+
+        .auth-form input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .auth-status {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .auth-status-text {
+            color: #22c55e;
+        }
+
+        .auth-status-change {
+            color: #3b82f6;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 0.875rem;
+            padding: 0;
+        }
+
+        .auth-status-change:hover {
+            text-decoration: underline;
+        }
+
+        .session-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .session-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .session-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+
+        .session-btn.stop {
+            background: #dc2626;
+        }
+
+        .session-btn.stop:hover {
+            background: #b91c1c;
+        }
+
+        .error-message {
+            color: #ef4444;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            min-height: 1.25rem;
+        }
+
+        .error-message:not(:empty) {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="branding">
+            <div class="branding-emoji" id="brandingEmoji"></div>
+            <h1 id="brandingName">The Ear</h1>
+            <p class="subtitle" id="brandingDesc">Voice Bridge</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="status-dot" id="statusDot"></span>
+                <div class="status-info">
+                    <div class="status-text" id="statusText">Disconnected</div>
+                    <div class="state-text" id="stateText"></div>
+                </div>
+            </div>
+            <div class="mute-controls" id="muteControls">
+                <button class="mute-btn" id="micBtn" title="Toggle microphone">
+                    <span class="mute-btn-inner">
+                        <span id="micIcon">&#x1F3A4;</span>
+                        <span class="mute-btn-label">Mic</span>
+                    </span>
+                </button>
+                <button class="mute-btn" id="ttsBtn" title="Toggle TTS">
+                    <span class="mute-btn-inner">
+                        <span id="ttsIcon">&#x1F50A;</span>
+                        <span class="mute-btn-label">TTS</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-empty" id="chatEmpty">Enter your token and tap Start Session to begin voice chat</div>
+        </div>
+
+        <div class="auth-form" id="authForm">
+            <div class="auth-status" id="authStatus" style="display: none;">
+                <span class="auth-status-text">&#x1F511; Token saved</span>
+                <button class="auth-status-change" id="authChangeBtn">Change</button>
+            </div>
+            <input type="password" id="tokenInput" placeholder="Auth token">
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <button class="session-btn" id="sessionBtn">Start Session</button>
+    </div>
+
+    <script>
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const stateText = document.getElementById('stateText');
+        const sessionBtn = document.getElementById('sessionBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const tokenInput = document.getElementById('tokenInput');
+        const authForm = document.getElementById('authForm');
+        const authStatus = document.getElementById('authStatus');
+        const authChangeBtn = document.getElementById('authChangeBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatEmpty = document.getElementById('chatEmpty');
+        const muteControls = document.getElementById('muteControls');
+        const micBtn = document.getElementById('micBtn');
+        const ttsBtn = document.getElementById('ttsBtn');
+        const micIcon = document.getElementById('micIcon');
+        const ttsIcon = document.getElementById('ttsIcon');
+        const brandingEmoji = document.getElementById('brandingEmoji');
+        const brandingName = document.getElementById('brandingName');
+        const brandingDesc = document.getElementById('brandingDesc');
+
+        let pc = null;
+        let localStream = null;
+        let pcId = null;
+        let dataChannel = null;
+        let audioElement = null;
+        let isConnected = false;
+        let micMuted = false;
+        let ttsMuted = false;
+        let currentAssistantMessage = null;
+
+        const TOKEN_STORAGE_KEY = 'mvb_token';
+
+        async function loadBranding() {
+            try {
+                const res = await fetch('/branding');
+                const data = await res.json();
+                if (data.emoji) {
+                    brandingEmoji.textContent = data.emoji === 'lobster' ? '\u{1F99E}' : data.emoji;
+                }
+                if (data.name) {
+                    brandingName.textContent = data.name;
+                    document.title = `${data.name} - Voice`;
+                }
+                if (data.description) {
+                    brandingDesc.textContent = data.description;
+                }
+            } catch (err) {
+                console.warn('Failed to load branding:', err);
+            }
+        }
+
+        function setStatus(status, text) {
+            statusDot.className = 'status-dot ' + status;
+            statusText.textContent = text;
+        }
+
+        function setState(state) {
+            stateText.className = 'state-text ' + state;
+            const stateLabels = {
+                listening: 'Listening',
+                recording: 'Recording',
+                processing: 'Processing',
+                speaking: 'Speaking',
+            };
+            stateText.textContent = stateLabels[state] || '';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+        }
+
+        function clearError() {
+            errorMessage.textContent = '';
+        }
+
+        function addMessage(role, text) {
+            chatEmpty.style.display = 'none';
+            const msg = document.createElement('div');
+            msg.className = `message ${role}`;
+            msg.textContent = text;
+            chatContainer.appendChild(msg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return msg;
+        }
+
+        function appendToAssistant(text) {
+            if (!currentAssistantMessage) {
+                currentAssistantMessage = addMessage('assistant', '');
+                currentAssistantMessage.classList.add('streaming');
+            }
+            currentAssistantMessage.textContent += text;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function finalizeAssistant() {
+            if (currentAssistantMessage) {
+                currentAssistantMessage.classList.remove('streaming');
+                currentAssistantMessage = null;
+            }
+        }
+
+        function handleDataChannelMessage(event) {
+            try {
+                const msg = JSON.parse(event.data);
+
+                if (msg.type === 'state') {
+                    setState(msg.state);
+                } else if (msg.type === 'transcription') {
+                    addMessage('user', msg.text);
+                } else if (msg.type === 'response') {
+                    if (msg.done) {
+                        finalizeAssistant();
+                    } else if (msg.text) {
+                        appendToAssistant(msg.text);
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to parse data channel message:', err);
+            }
+        }
+
+        function sendDataChannelMessage(msg) {
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify(msg));
+            }
+        }
+
+        async function getLocation() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve(null);
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => resolve({
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy,
+                    }),
+                    () => resolve(null),
+                    { timeout: 5000 }
+                );
+            });
+        }
+
+        function resetUI() {
+            setStatus('', 'Disconnected');
+            setState('');
+            sessionBtn.textContent = 'Start Session';
+            sessionBtn.classList.remove('stop');
+            sessionBtn.disabled = false;
+            authForm.style.display = 'block';
+            updateAuthDisplay();
+            muteControls.classList.remove('visible');
+            isConnected = false;
+            micMuted = false;
+            ttsMuted = false;
+            micBtn.classList.remove('muted');
+            ttsBtn.classList.remove('muted');
+            micIcon.innerHTML = '&#x1F3A4;';
+            ttsIcon.innerHTML = '&#x1F50A;';
+            currentAssistantMessage = null;
+        }
+
+        function cleanup() {
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.srcObject = null;
+                audioElement = null;
+            }
+            if (dataChannel) {
+                dataChannel.close();
+                dataChannel = null;
+            }
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
+            pcId = null;
+        }
+
+        async function stopSession() {
+            cleanup();
+            resetUI();
+        }
+
+        async function startSession() {
+            const token = tokenInput.value.trim();
+            if (!token) {
+                showError('Please enter auth token');
+                return;
+            }
+
+            clearError();
+            setStatus('connecting', 'Connecting...');
+            sessionBtn.disabled = true;
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                    },
+                    video: false,
+                });
+
+                const location = await getLocation();
+
+                pc = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+                });
+
+                localStream.getAudioTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+
+                pc.ontrack = (event) => {
+                    audioElement = new Audio();
+                    audioElement.srcObject = event.streams[0];
+                    audioElement.muted = ttsMuted;
+                    audioElement.play().catch(() => {});
+                };
+
+                // Create data channel for UI messages (must be created by client)
+                console.log('Creating data channel...');
+                dataChannel = pc.createDataChannel('pipecat');
+                console.log('Data channel created, state:', dataChannel.readyState);
+                dataChannel.onmessage = (event) => {
+                    console.log('Data channel message received:', event.data);
+                    handleDataChannelMessage(event);
+                };
+                dataChannel.onopen = () => {
+                    console.log('Data channel OPENED, state:', dataChannel.readyState);
+                    sendDataChannelMessage({ type: 'tts_enabled', value: !ttsMuted });
+                };
+                dataChannel.onerror = (e) => console.error('Data channel ERROR:', e);
+                dataChannel.onclose = () => console.log('Data channel CLOSED');
+
+                pc.oniceconnectionstatechange = () => {
+                    console.log('ICE state:', pc.iceConnectionState);
+                    if (pc.iceConnectionState === 'connected') {
+                        setStatus('connected', 'Connected');
+                        setState('listening');
+                        authForm.style.display = 'none';
+                        muteControls.classList.add('visible');
+                        sessionBtn.textContent = 'Stop Session';
+                        sessionBtn.classList.add('stop');
+                        sessionBtn.disabled = false;
+                        isConnected = true;
+                    } else if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+                        cleanup();
+                        resetUI();
+                        setStatus('error', 'Disconnected');
+                    }
+                };
+
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                await new Promise((resolve) => {
+                    if (pc.iceGatheringState === 'complete') {
+                        resolve();
+                    } else {
+                        const checkState = () => {
+                            if (pc.iceGatheringState === 'complete') {
+                                pc.removeEventListener('icegatheringstatechange', checkState);
+                                resolve();
+                            }
+                        };
+                        pc.addEventListener('icegatheringstatechange', checkState);
+                        setTimeout(resolve, 3000);
+                    }
+                });
+
+                const body = {
+                    sdp: pc.localDescription.sdp,
+                    type: pc.localDescription.type,
+                    token: token,
+                    location,
+                };
+                if (pcId) {
+                    body.pc_id = pcId;
+                }
+
+                const response = await fetch('/api/offer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to connect');
+                }
+
+                const answer = await response.json();
+                pcId = answer.pc_id;
+                await pc.setRemoteDescription(new RTCSessionDescription({
+                    sdp: answer.sdp,
+                    type: answer.type,
+                }));
+
+            } catch (err) {
+                console.error('Connection error:', err);
+                showError(err.message);
+                cleanup();
+                resetUI();
+                setStatus('error', 'Error');
+            }
+        }
+
+        function toggleMic() {
+            if (!localStream) return;
+            micMuted = !micMuted;
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = !micMuted;
+            });
+            micBtn.classList.toggle('muted', micMuted);
+            micIcon.innerHTML = micMuted ? '&#x1F507;' : '&#x1F3A4;';
+        }
+
+        function toggleTTS() {
+            ttsMuted = !ttsMuted;
+            if (audioElement) {
+                audioElement.muted = ttsMuted;
+            }
+            ttsBtn.classList.toggle('muted', ttsMuted);
+            ttsIcon.innerHTML = ttsMuted ? '&#x1F508;' : '&#x1F50A;';
+            sendDataChannelMessage({ type: 'tts_enabled', value: !ttsMuted });
+        }
+
+        function updateAuthDisplay() {
+            const hasToken = tokenInput.value.trim().length > 0;
+            if (hasToken) {
+                authStatus.style.display = 'flex';
+                tokenInput.style.display = 'none';
+            } else {
+                authStatus.style.display = 'none';
+                tokenInput.style.display = 'block';
+            }
+        }
+
+        function showTokenInput() {
+            authStatus.style.display = 'none';
+            tokenInput.style.display = 'block';
+            tokenInput.focus();
+        }
+
+        sessionBtn.addEventListener('click', () => {
+            if (isConnected) {
+                stopSession();
+            } else {
+                startSession();
+            }
+        });
+
+        micBtn.addEventListener('click', toggleMic);
+        ttsBtn.addEventListener('click', toggleTTS);
+        authChangeBtn.addEventListener('click', showTokenInput);
+
+        const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+        if (savedToken) {
+            tokenInput.value = savedToken;
+        }
+
+        tokenInput.addEventListener('change', () => {
+            localStorage.setItem(TOKEN_STORAGE_KEY, tokenInput.value);
+        });
+
+        tokenInput.addEventListener('blur', updateAuthDisplay);
+
+        updateAuthDisplay();
+        loadBranding();
+    </script>
+</body>
+</html>

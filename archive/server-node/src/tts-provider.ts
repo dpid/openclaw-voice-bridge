@@ -1,6 +1,6 @@
 /**
- * Moltbot Voice Bridge - TTS Provider Interface
- * 
+ * OpenClaw Voice Bridge - TTS Provider Interface
+ *
  * Unified interface for text-to-speech providers.
  */
 

@@ -4,115 +4,109 @@ Instructions for AI assistants working on this codebase.
 
 ## What This Is
 
-A hands-free voice interface for Moltbot. Two components:
-- **PWA** (`pwa/`) — Svelte frontend, captures audio via VAD, plays TTS responses
-- **Proxy Server** (`server/`) — Node.js backend, transcribes audio (Groq), routes to Moltbot Gateway, streams TTS back
+A hands-free voice interface for OpenClaw using Pipecat for real-time audio processing.
+- **Server** (`server/`) — Python/FastAPI backend with Pipecat pipeline
+- **Web Client** (`server/static/`) — Simple HTML/JS WebRTC client
+- **PWA** (`pwa/`) — Original Svelte frontend (reference)
+- **Archive** (`archive/server-node/`) — Original Node.js implementation (reference)
 
 ## Message Flow
 
 ```
-User speaks → VAD detects speech → audio captured as WAV
-    → WebSocket to server → Groq Whisper transcription
-    → Moltbot Gateway (AI response) → TTS synthesis
-    → audio streamed back → PWA plays it
+User speaks → WebRTC audio → Pipecat server
+    → Groq Whisper (STT) → Hallucination filter
+    → OpenClaw Gateway (OpenAI chat completions)
+    → Response cleaner → TTS synthesis
+    → WebRTC audio → client plays it
 ```
 
 ## Key Files
 
-### Server (`server/src/`)
+### Server (`server/`)
 | File | Purpose |
 |------|---------|
-| `index.ts` | WebSocket server, main entry point, message routing |
-| `groq.ts` | Whisper transcription via Groq API |
-| `gateway.ts` | Moltbot Gateway WebSocket client |
-| `tts.ts` | ElevenLabs TTS |
-| `tts-chatterbox.ts` | Local Chatterbox TTS (alternative) |
-| `tts-provider.ts` | TTS provider interface/factory |
-| `filters.ts` | Hallucination detection for transcriptions |
-| `config.ts` | Loads config from moltbot.json |
+| `server.py` | FastAPI server, WebRTC signaling, offer/answer handling |
+| `bot.py` | Pipecat pipeline definition, service instantiation |
+| `config.py` | Loads config from moltbot.json and environment |
+| `processors/hallucination_filter.py` | Filters Whisper noise/hallucinations |
+| `processors/response_cleaner.py` | Strips markdown before TTS |
+| `services/chatterbox_tts.py` | Local Chatterbox TTS service |
+| `test_gateway.py` | Gateway chat completions endpoint test |
 
-### PWA (`pwa/src/`)
+### Static Client (`server/static/`)
 | File | Purpose |
 |------|---------|
-| `App.svelte` | Main UI component, state machine, chat display |
-| `lib/vad.ts` | Voice Activity Detection (Silero via ONNX) |
-| `lib/websocket.ts` | WebSocket client, message handling |
-| `lib/audio.ts` | Audio playback (Web Audio API) |
-| `lib/stores.ts` | Svelte stores (state, branding, etc.) |
-| `lib/types.ts` | TypeScript type definitions |
+| `index.html` | WebRTC client, token auth, audio capture/playback |
 
 ### Config
 | File | Purpose |
 |------|---------|
-| `server/.env` | Server secrets (MVB_AUTH_TOKEN, etc.) |
-| `pwa/.env` | PWA config (proxy URL, branding) |
-| `pwa/vite.config.ts` | Build config, PWA manifest |
+| `server/.env` | Server secrets (OC_AUTH_TOKEN, etc.) |
+| `~/.moltbot/moltbot.json` | Shared OpenClaw config (API keys, gateway) |
 
 ## Common Tasks
 
-**Change branding (name, emoji, description):**
-→ Edit `pwa/.env` (`VITE_BOT_NAME`, `VITE_BOT_EMOJI`, `VITE_BOT_DESCRIPTION`)
-→ Rebuild PWA
-
-**Add new WebSocket message type:**
-→ Define type in `pwa/src/lib/types.ts`
-→ Handle in `server/src/index.ts` (server→client) or `pwa/src/lib/websocket.ts` (client→server)
-→ Update protocol docs in `pwa/README.md`
+**Change branding:**
+→ Edit `server/.env` (`ASSISTANT_NAME`, `ASSISTANT_EMOJI`)
 
 **Change TTS provider:**
-→ Edit `server/src/tts-provider.ts` or set `CHATTERBOX_URL` env var
-
-**Update PWA icons:**
-→ Replace PNGs in `pwa/public/` (192, 512, maskable-512, apple-touch-icon, favicon)
-→ Maskable icon needs ~80% scale with padding for Android safe zone
+→ Set `CHATTERBOX_URL` env var for local Chatterbox
+→ Otherwise uses ElevenLabs from moltbot.json
 
 **Add hallucination filter pattern:**
-→ Edit `server/src/filters.ts`
+→ Edit `server/processors/hallucination_filter.py`
 
-## Config Relationships
+**Add response cleaning rule:**
+→ Edit `server/processors/response_cleaner.py`
 
-Server and PWA have **separate** branding configs:
-- Server: `ASSISTANT_NAME`, `ASSISTANT_EMOJI` — used in server logs/responses
-- PWA: `VITE_BOT_NAME`, `VITE_BOT_EMOJI`, `VITE_BOT_DESCRIPTION` — used in UI and PWA manifest
+## Gateway Requirements
 
-These are intentionally decoupled (server doesn't know about PWA branding).
+The server uses the OpenAI-compatible chat completions endpoint on the OpenClaw gateway. Ensure it's enabled:
+
+```bash
+# Get the current config hash
+HASH=$(openclaw gateway call config.get 2>/dev/null | grep '"hash"' | cut -d'"' -f4)
+
+# Enable chat completions endpoint
+openclaw gateway call config.patch --params "{\"baseHash\": \"$HASH\", \"raw\": \"{\\\"gateway\\\":{\\\"http\\\":{\\\"endpoints\\\":{\\\"chatCompletions\\\":{\\\"enabled\\\":true}}}}}\"}"
+```
+
+Test with:
+```bash
+cd server && uv run python test_gateway.py
+```
 
 ## Gotchas
 
-1. **PWA caches aggressively** — after changes, hard refresh (Ctrl+Shift+R) or clear site data
-2. **Maskable icons** need content in center 80%, padding around edges (Android adaptive icons crop)
-3. **`.env` is gitignored**, `.env.example` is not — don't commit secrets
-4. **VAD model files** are large (~5MB ONNX) — they're in `pwa/public/vad/`, don't delete
-5. **Rate limiting** — server limits 20 requests/min per connection
-6. **Audio unlock** — browsers require user interaction before audio playback; PWA handles this on session start
+1. **Gateway endpoint must be enabled** — uses `/v1/chat/completions`, not WebSocket protocol
+2. **Session key header** — uses `x-openclaw-session-key` for session routing
+3. **WebRTC requires ICE** — STUN server configured for NAT traversal
+4. **VAD in Pipecat** — uses Silero VAD via aggregators, not separate processor
+5. **Rate limiting** — 20 requests/min per connection
+6. **TTS fallback** — Chatterbox → ElevenLabs (if Chatterbox unavailable)
 
 ## Don't
 
 - Don't commit `.env` files (secrets)
-- Don't delete `pwa/public/vad/` (VAD model files)
-- Don't change WebSocket protocol without updating both server and PWA
-- Don't skip the hallucination filter — it catches garbage transcriptions from silence/noise
+- Don't skip the hallucination filter — catches garbage from silence/noise
+- Don't skip the response cleaner — markdown sounds bad when spoken
 
 ## Testing
 
 ```bash
-# Server unit tests
-cd server && npm test
+cd server
 
-# Server integration tests (need running services)
-npm run test:groq      # Whisper
-npm run test:gateway   # Moltbot connection
-npm run test:tts       # ElevenLabs
-npm run test:all       # All integration tests
+# Unit tests
+uv run pytest
 
-# PWA dev server
-cd pwa && npm run dev
+# Gateway integration test
+uv run python test_gateway.py
 ```
 
 ## Local Development
 
-1. Start Moltbot Gateway
-2. Start server: `cd server && npm run dev`
-3. Start PWA: `cd pwa && npm run dev`
-4. Open http://localhost:5173
+1. Start OpenClaw Gateway (with chat completions enabled)
+2. Create `.env` from `.env.example`
+3. Run server: `cd server && uv run python server.py`
+4. Open http://localhost:7860
 5. Enter auth token, grant mic permission, start session
