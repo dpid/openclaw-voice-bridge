@@ -5,10 +5,8 @@ Instructions for AI assistants working on this codebase.
 ## What This Is
 
 A hands-free voice interface for OpenClaw using Pipecat for real-time audio processing.
-- **Server** (`server/`) — Python/FastAPI backend with Pipecat pipeline
-- **Web Client** (`server/static/`) — Simple HTML/JS WebRTC client
-- **PWA** (`pwa/`) — Original Svelte frontend (reference)
-- **Archive** (`archive/server-node/`) — Original Node.js implementation (reference)
+- **Server** — Python/FastAPI backend with Pipecat pipeline
+- **Web Client** (`static/`) — Simple HTML/JS WebRTC client
 
 ## Message Flow
 
@@ -22,7 +20,7 @@ User speaks → WebRTC audio → Pipecat server
 
 ## Key Files
 
-### Server (`server/`)
+### Server
 | File | Purpose |
 |------|---------|
 | `server.py` | FastAPI server, WebRTC signaling, offer/answer handling |
@@ -33,7 +31,7 @@ User speaks → WebRTC audio → Pipecat server
 | `services/chatterbox_tts.py` | Local Chatterbox TTS service |
 | `test_gateway.py` | Gateway chat completions endpoint test |
 
-### Static Client (`server/static/`)
+### Static Client (`static/`)
 | File | Purpose |
 |------|---------|
 | `index.html` | WebRTC client, token auth, audio capture/playback |
@@ -41,23 +39,23 @@ User speaks → WebRTC audio → Pipecat server
 ### Config
 | File | Purpose |
 |------|---------|
-| `server/.env` | Server secrets (OC_AUTH_TOKEN, etc.) |
+| `.env` | Server secrets (OC_AUTH_TOKEN, etc.) |
 | `~/.openclaw/openclaw.json` | Shared OpenClaw config (API keys, gateway) |
 
 ## Common Tasks
 
 **Change branding:**
-→ Edit `server/.env` (`ASSISTANT_NAME`, `ASSISTANT_EMOJI`)
+→ Edit `.env` (`ASSISTANT_NAME`, `ASSISTANT_EMOJI`)
 
 **Change TTS provider:**
 → Set `CHATTERBOX_URL` env var for local Chatterbox
 → Otherwise uses ElevenLabs from openclaw.json
 
 **Add hallucination filter pattern:**
-→ Edit `server/processors/hallucination_filter.py`
+→ Edit `processors/hallucination_filter.py`
 
 **Add response cleaning rule:**
-→ Edit `server/processors/response_cleaner.py`
+→ Edit `processors/response_cleaner.py`
 
 ## Gateway Requirements
 
@@ -73,7 +71,7 @@ openclaw gateway call config.patch --params "{\"baseHash\": \"$HASH\", \"raw\": 
 
 Test with:
 ```bash
-cd server && uv run python test_gateway.py
+uv run python test_gateway.py
 ```
 
 ## Gotchas
@@ -94,8 +92,6 @@ cd server && uv run python test_gateway.py
 ## Testing
 
 ```bash
-cd server
-
 # Unit tests
 uv run pytest
 
@@ -107,6 +103,6 @@ uv run python test_gateway.py
 
 1. Start OpenClaw Gateway (with chat completions enabled)
 2. Create `.env` from `.env.example`
-3. Run server: `cd server && uv run python server.py`
+3. Run server: `uv run python server.py`
 4. Open http://localhost:7860
 5. Enter auth token, grant mic permission, start session

@@ -54,15 +54,12 @@ openclaw gateway call config.patch --params "{\"baseHash\": \"$HASH\", \"raw\": 
 Test the endpoint:
 
 ```bash
-cd server
 uv run python test_gateway.py
 ```
 
 ### Server
 
 ```bash
-cd server
-
 # Create virtual environment and install dependencies
 uv sync
 
@@ -91,7 +88,7 @@ cloudflared tunnel --url http://localhost:7860
 
 ## Environment Variables
 
-### Server (`server/.env`)
+### Server (`.env`)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -111,8 +108,6 @@ cloudflared tunnel --url http://localhost:7860
 ## Testing
 
 ```bash
-cd server
-
 # Unit tests
 uv run pytest
 
@@ -176,21 +171,20 @@ User's current location: 45.5515, -122.6732
 
 ```
 the-ear/
-├── server/               # Python/Pipecat server
-│   ├── server.py         # FastAPI + WebRTC signaling
-│   ├── bot.py            # Pipecat pipeline definition
-│   ├── config.py         # Configuration loader
-│   ├── processors/       # Custom frame processors
-│   │   ├── hallucination_filter.py   # Filters Whisper noise artifacts
-│   │   ├── response_cleaner.py       # Strips markdown for TTS
-│   │   ├── transcription_prefixer.py # Adds emoji prefix, sends to UI
-│   │   ├── ui_notifier.py            # Streams response text to frontend
-│   │   └── bot_state_notifier.py     # Sends speaking/listening state
-│   ├── services/         # Custom TTS services
-│   │   └── chatterbox_tts.py
-│   ├── static/           # Web client
-│   │   └── index.html
-│   └── tests/            # Unit tests
+├── server.py             # FastAPI + WebRTC signaling
+├── bot.py                # Pipecat pipeline definition
+├── config.py             # Configuration loader
+├── processors/           # Custom frame processors
+│   ├── hallucination_filter.py   # Filters Whisper noise artifacts
+│   ├── response_cleaner.py       # Strips markdown for TTS
+│   ├── transcription_prefixer.py # Adds emoji prefix, sends to UI
+│   ├── ui_notifier.py            # Streams response text to frontend
+│   └── bot_state_notifier.py     # Sends speaking/listening state
+├── services/             # Custom TTS services
+│   └── chatterbox_tts.py
+├── static/               # Web client
+│   └── index.html
+├── tests/                # Unit tests
 └── README.md
 ```
 
