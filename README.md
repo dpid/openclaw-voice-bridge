@@ -191,9 +191,6 @@ the-ear/
 │   ├── static/           # Web client
 │   │   └── index.html
 │   └── tests/            # Unit tests
-├── archive/              # Old Node.js server (reference)
-│   └── server-node/
-├── pwa/                  # Original Svelte PWA (reference)
 └── README.md
 ```
 
