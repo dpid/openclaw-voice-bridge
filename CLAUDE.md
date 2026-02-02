@@ -2,12 +2,6 @@
 
 Hands-free voice interface using Pipecat for real-time WebRTC audio.
 
-## Current State
-
-**Branch:** `pipecat` - End-to-end working (browser → STT → LLM → TTS → browser)
-
-See `.claude/pipecat-migration-state.md` for detailed migration status.
-
 ## Quick Reference
 
 ```bash

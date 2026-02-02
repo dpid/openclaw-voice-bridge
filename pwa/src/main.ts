@@ -6,4 +6,3 @@ const app = mount(App, {
 });
 
 export default app;
-// v2 - force sw update Mon Jan 26 15:25:47 PST 2026

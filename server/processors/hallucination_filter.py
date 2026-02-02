@@ -47,8 +47,6 @@ class HallucinationFilterProcessor(FrameProcessor):
         if isinstance(frame, TranscriptionFrame):
             filtered, reason = should_filter(frame.text)
             if filtered:
-                print(f"[Filter] Dropped ({reason}): {frame.text!r}")
                 return
-            print(f"[Filter] Passed: {frame.text!r}")
 
         await self.push_frame(frame, direction)
