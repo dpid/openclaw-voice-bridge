@@ -74,7 +74,7 @@ cp .env.example .env
 uv run python server.py
 ```
 
-The server reads additional config from `~/.moltbot/moltbot.json`:
+The server reads additional config from `~/.openclaw/openclaw.json`:
 - `gateway.port` and `gateway.auth.token`
 - `messages.tts.elevenlabs.apiKey` and `voiceId`
 - `env.vars.GROQ_API_KEY`
@@ -99,11 +99,11 @@ cloudflared tunnel --url http://localhost:7860
 | `SESSION_KEY` | No | OpenClaw session key (default: `agent:main:main`) |
 | `PORT` | No | Server port (default: `7860`) |
 | `GATEWAY_URL` | No | Gateway HTTP URL (default: `http://localhost:18789`) |
-| `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
+| `GROQ_API_KEY` | No | Override Groq key (otherwise from openclaw.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox server URL (e.g., `http://localhost:8880`) |
 | `CHATTERBOX_VOICE` | No | Chatterbox voice name (default: `default`) |
-| `ELEVENLABS_API_KEY` | No | Override ElevenLabs key (otherwise from moltbot.json) |
-| `ELEVENLABS_VOICE_ID` | No | Override ElevenLabs voice (otherwise from moltbot.json) |
+| `ELEVENLABS_API_KEY` | No | Override ElevenLabs key (otherwise from openclaw.json) |
+| `ELEVENLABS_VOICE_ID` | No | Override ElevenLabs voice (otherwise from openclaw.json) |
 | `ALLOWED_ORIGINS` | No | CORS allowed origins (comma-separated) |
 | `ASSISTANT_NAME` | No | Assistant name (default: `OpenClaw`) |
 | `ASSISTANT_EMOJI` | No | Emoji (default: `lobster`) |
@@ -130,7 +130,7 @@ uv run python test_gateway.py
 
 ### ElevenLabs (default)
 
-Configured via `~/.moltbot/moltbot.json`:
+Configured via `~/.openclaw/openclaw.json`:
 
 ```json
 {

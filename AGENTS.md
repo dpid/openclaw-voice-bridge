@@ -27,7 +27,7 @@ User speaks → WebRTC audio → Pipecat server
 |------|---------|
 | `server.py` | FastAPI server, WebRTC signaling, offer/answer handling |
 | `bot.py` | Pipecat pipeline definition, service instantiation |
-| `config.py` | Loads config from moltbot.json and environment |
+| `config.py` | Loads config from openclaw.json and environment |
 | `processors/hallucination_filter.py` | Filters Whisper noise/hallucinations |
 | `processors/response_cleaner.py` | Strips markdown before TTS |
 | `services/chatterbox_tts.py` | Local Chatterbox TTS service |
@@ -42,7 +42,7 @@ User speaks → WebRTC audio → Pipecat server
 | File | Purpose |
 |------|---------|
 | `server/.env` | Server secrets (OC_AUTH_TOKEN, etc.) |
-| `~/.moltbot/moltbot.json` | Shared OpenClaw config (API keys, gateway) |
+| `~/.openclaw/openclaw.json` | Shared OpenClaw config (API keys, gateway) |
 
 ## Common Tasks
 
@@ -51,7 +51,7 @@ User speaks → WebRTC audio → Pipecat server
 
 **Change TTS provider:**
 → Set `CHATTERBOX_URL` env var for local Chatterbox
-→ Otherwise uses ElevenLabs from moltbot.json
+→ Otherwise uses ElevenLabs from openclaw.json
 
 **Add hallucination filter pattern:**
 → Edit `server/processors/hallucination_filter.py`

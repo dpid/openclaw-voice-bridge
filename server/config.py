@@ -22,28 +22,26 @@ class Config:
 
 def load_config() -> Config:
     home = Path.home()
-    config_path = home / ".moltbot" / "moltbot.json"
-    if not config_path.exists():
-        config_path = home / ".clawdbot" / "clawdbot.json"
+    config_path = home / ".openclaw" / "openclaw.json"
 
-    moltbot_config: dict = {}
+    openclaw_config: dict = {}
     try:
-        moltbot_config = json.loads(config_path.read_text())
+        openclaw_config = json.loads(config_path.read_text())
         print(f"Loaded {config_path}")
     except Exception as e:
-        raise RuntimeError(f"Could not load moltbot.json: {e}")
+        raise RuntimeError(f"Could not load openclaw.json: {e}")
 
-    # Extract values from moltbot.json
+    # Extract values from openclaw.json
     groq_api_key = (
         os.environ.get("GROQ_API_KEY")
-        or moltbot_config.get("env", {}).get("vars", {}).get("GROQ_API_KEY")
+        or openclaw_config.get("env", {}).get("vars", {}).get("GROQ_API_KEY")
         or ""
     )
 
-    gateway_port = moltbot_config.get("gateway", {}).get("port", 18789)
-    gateway_token = moltbot_config.get("gateway", {}).get("auth", {}).get("token", "")
+    gateway_port = openclaw_config.get("gateway", {}).get("port", 18789)
+    gateway_token = openclaw_config.get("gateway", {}).get("auth", {}).get("token", "")
 
-    tts_config = moltbot_config.get("messages", {}).get("tts", {}).get("elevenlabs", {})
+    tts_config = openclaw_config.get("messages", {}).get("tts", {}).get("elevenlabs", {})
     elevenlabs_api_key = os.environ.get("ELEVENLABS_API_KEY") or tts_config.get("apiKey", "")
     elevenlabs_voice_id = os.environ.get("ELEVENLABS_VOICE_ID") or tts_config.get("voiceId", "")
 

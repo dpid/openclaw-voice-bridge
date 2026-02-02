@@ -29,7 +29,7 @@ Browser ←→ WebRTC ←→ FastAPI/Pipecat ←→ OpenClaw Gateway (chat compl
 
 - `server/server.py` - FastAPI + WebRTC signaling
 - `server/bot.py` - Pipecat pipeline definition
-- `server/config.py` - Config from `~/.moltbot/moltbot.json`
+- `server/config.py` - Config from `~/.openclaw/openclaw.json`
 - `server/processors/` - Custom frame processors:
   - `hallucination_filter.py` - Filters Whisper noise artifacts
   - `response_cleaner.py` - Strips OpenClaw echo + markdown for TTS
@@ -43,7 +43,7 @@ Browser ←→ WebRTC ←→ FastAPI/Pipecat ←→ OpenClaw Gateway (chat compl
 
 - Gateway chat completions endpoint must be enabled (see README.md)
 - `OC_AUTH_TOKEN` in `server/.env`
-- ElevenLabs credentials in `~/.moltbot/moltbot.json` (or Chatterbox running)
+- ElevenLabs credentials in `~/.openclaw/openclaw.json` (or Chatterbox running)
 
 ## See Also
 

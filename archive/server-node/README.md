@@ -52,7 +52,7 @@ npm start
 | `OC_AUTH_TOKEN` | Yes | Auth token for PWA connections |
 | `SESSION_KEY` | No | OpenClaw session key (default: `agent:main:main`) |
 | `PORT` | No | Server port (default: `3001`) |
-| `GROQ_API_KEY` | No | Override Groq key (otherwise from moltbot.json) |
+| `GROQ_API_KEY` | No | Override Groq key (otherwise from openclaw.json) |
 | `CHATTERBOX_URL` | No | Local Chatterbox TTS URL (e.g., `http://localhost:8880`) |
 | `CHATTERBOX_VOICE` | No | Chatterbox voice name (default: `Eli`) |
 | `ALLOWED_ORIGINS` | No | CORS allowed origins (comma-separated) |
@@ -61,9 +61,9 @@ npm start
 
 ### OpenClaw Config
 
-The server reads additional configuration from `~/.moltbot/moltbot.json`:
+The server reads additional configuration from `~/.openclaw/openclaw.json`:
 
-| Setting | Path in moltbot.json |
+| Setting | Path in openclaw.json |
 |---------|----------------------|
 | Groq API Key | `env.vars.GROQ_API_KEY` |
 | Gateway Token | `gateway.auth.token` |
@@ -100,7 +100,7 @@ npm run test:all      # Run all integration tests
 
 ### ElevenLabs (default)
 
-Uses ElevenLabs API configured in `~/.moltbot/moltbot.json`. Streams audio chunks for low-latency playback.
+Uses ElevenLabs API configured in `~/.openclaw/openclaw.json`. Streams audio chunks for low-latency playback.
 
 ### Chatterbox (local)
 

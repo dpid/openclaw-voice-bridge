@@ -14,23 +14,21 @@ load_dotenv()
 def load_gateway_config():
     """Load just the gateway config without requiring OC_AUTH_TOKEN."""
     home = Path.home()
-    config_path = home / ".moltbot" / "moltbot.json"
-    if not config_path.exists():
-        config_path = home / ".clawdbot" / "clawdbot.json"
+    config_path = home / ".openclaw" / "openclaw.json"
 
     try:
-        moltbot_config = json.loads(config_path.read_text())
+        openclaw_config = json.loads(config_path.read_text())
         print(f"Loaded {config_path}")
     except Exception as e:
-        raise RuntimeError(f"Could not load moltbot.json: {e}")
+        raise RuntimeError(f"Could not load openclaw.json: {e}")
 
-    gateway_port = moltbot_config.get("gateway", {}).get("port", 18789)
-    gateway_token = moltbot_config.get("gateway", {}).get("auth", {}).get("token", "")
+    gateway_port = openclaw_config.get("gateway", {}).get("port", 18789)
+    gateway_token = openclaw_config.get("gateway", {}).get("auth", {}).get("token", "")
     gateway_url = os.environ.get("GATEWAY_URL", f"http://localhost:{gateway_port}")
     session_key = os.environ.get("SESSION_KEY", "agent:main:main")
 
     if not gateway_token:
-        raise RuntimeError("Missing gateway.auth.token in moltbot.json")
+        raise RuntimeError("Missing gateway.auth.token in openclaw.json")
 
     return gateway_url, gateway_token, session_key
 

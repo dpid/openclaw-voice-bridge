@@ -1,7 +1,7 @@
 /**
  * OpenClaw Voice Bridge - Configuration Loader
  *
- * Loads config from environment and ~/.moltbot/moltbot.json
+ * Loads config from environment and ~/.openclaw/openclaw.json
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -9,7 +9,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { ProxyConfig } from './types.js';
 
-interface MoltbotConfig {
+interface OpenClawConfig {
   env?: {
     vars?: {
       GROQ_API_KEY?: string;
@@ -32,35 +32,31 @@ interface MoltbotConfig {
 }
 
 /**
- * Load configuration from moltbot.json and environment
+ * Load configuration from openclaw.json and environment
  */
 export function loadConfig(): ProxyConfig {
-  // Try ~/.moltbot first, fall back to ~/.clawdbot for backwards compatibility
-  let configPath = join(homedir(), '.moltbot', 'moltbot.json');
-  if (!existsSync(configPath)) {
-    configPath = join(homedir(), '.clawdbot', 'clawdbot.json');
-  }
+  const configPath = join(homedir(), '.openclaw', 'openclaw.json');
   
-  let moltbotConfig: MoltbotConfig = {};
+  let openclawConfig: OpenClawConfig = {};
   try {
     const raw = readFileSync(configPath, 'utf-8');
-    moltbotConfig = JSON.parse(raw);
+    openclawConfig = JSON.parse(raw);
     console.log(`✓ Loaded ${configPath}`);
   } catch (err) {
     console.error(`✗ Failed to load ${configPath}:`, err);
-    throw new Error('Could not load moltbot.json');
+    throw new Error('Could not load openclaw.json');
   }
 
   // Extract values
-  const groqApiKey = process.env.GROQ_API_KEY 
-    || moltbotConfig.env?.vars?.GROQ_API_KEY
+  const groqApiKey = process.env.GROQ_API_KEY
+    || openclawConfig.env?.vars?.GROQ_API_KEY
     || '';
-    
-  const gatewayPort = moltbotConfig.gateway?.port || 18789;
-  const gatewayToken = moltbotConfig.gateway?.auth?.token || '';
-  
-  const elevenLabsApiKey = moltbotConfig.messages?.tts?.elevenlabs?.apiKey || '';
-  const elevenLabsVoiceId = moltbotConfig.messages?.tts?.elevenlabs?.voiceId || '';
+
+  const gatewayPort = openclawConfig.gateway?.port || 18789;
+  const gatewayToken = openclawConfig.gateway?.auth?.token || '';
+
+  const elevenLabsApiKey = openclawConfig.messages?.tts?.elevenlabs?.apiKey || '';
+  const elevenLabsVoiceId = openclawConfig.messages?.tts?.elevenlabs?.voiceId || '';
 
   // Validate required config
   const missing: string[] = [];

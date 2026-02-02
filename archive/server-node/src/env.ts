@@ -22,7 +22,7 @@ export const ENV = {
   // Auth
   AUTH_TOKEN: getEnv('OC_AUTH_TOKEN'),
   
-  // API Keys (can also come from moltbot.json)
+  // API Keys (can also come from openclaw.json)
   GROQ_API_KEY: getEnv('GROQ_API_KEY'),
   
   // TTS Provider
