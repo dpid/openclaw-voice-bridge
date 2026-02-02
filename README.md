@@ -170,7 +170,7 @@ User's current location: 45.5515, -122.6732
 ## Project Structure
 
 ```
-the-ear/
+openclaw-voice-bridge/
 ├── server.py             # FastAPI + WebRTC signaling
 ├── bot.py                # Pipecat pipeline definition
 ├── config.py             # Configuration loader
