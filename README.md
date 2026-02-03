@@ -2,6 +2,21 @@
 
 A hands-free voice interface for OpenClaw. WebRTC-based real-time conversation using Pipecat for audio pipeline management. Shares context with your CLI session for seamless keyboard <-> voice handoff.
 
+> **Prerequisites:** Requires a running [OpenClaw](https://github.com/dpid/openclaw) installation with gateway enabled. New to OpenClaw? Set that up first.
+
+## Quickstart (for existing OpenClaw users)
+
+```bash
+git clone https://github.com/dpid/openclaw-voice-bridge.git
+cd openclaw-voice-bridge
+uv sync
+echo "OC_AUTH_TOKEN=$(openssl rand -hex 16)" > .env
+uv run python server.py
+# Open http://localhost:7860
+```
+
+The server reads your Groq API key and gateway token from `~/.openclaw/openclaw.json`. For TTS, configure ElevenLabs in that file or set `CHATTERBOX_URL` for local [Chatterbox](https://github.com/resemble-ai/chatterbox) TTS.
+
 ## Architecture
 
 ```
@@ -21,7 +36,7 @@ A hands-free voice interface for OpenClaw. WebRTC-based real-time conversation u
 - Real-time voice conversation via WebRTC
 - Voice Activity Detection (Silero VAD)
 - Speech transcription (Groq Whisper)
-- TTS responses (ElevenLabs or local Chatterbox)
+- TTS responses (ElevenLabs or local [Chatterbox](https://github.com/resemble-ai/chatterbox))
 - Shared session with CLI (seamless keyboard <-> voice)
 - Location-aware queries
 - Hallucination filtering (removes Whisper noise)
@@ -33,14 +48,16 @@ A hands-free voice interface for OpenClaw. WebRTC-based real-time conversation u
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.11+ with [uv](https://docs.astral.sh/uv/)
 - Running OpenClaw Gateway with chat completions endpoint enabled
-- Groq API key (for Whisper transcription)
-- ElevenLabs API key (for TTS) — or local Chatterbox server
+- `~/.openclaw/openclaw.json` with:
+  - `gateway.auth.token` — your gateway auth token
+  - `env.vars.GROQ_API_KEY` — Groq API key for Whisper transcription
+  - `messages.tts.elevenlabs.apiKey` and `voiceId` — for ElevenLabs TTS (or use local [Chatterbox](https://github.com/resemble-ai/chatterbox))
 
 ### Gateway Configuration
 
-Ensure the chat completions endpoint is enabled in your OpenClaw gateway:
+Enable the chat completions endpoint in your OpenClaw gateway:
 
 ```bash
 # Get the current config hash
@@ -59,21 +76,17 @@ uv run python test_gateway.py
 ### Server
 
 ```bash
-# Create virtual environment and install dependencies
+# Install dependencies
 uv sync
 
-# Create .env file
-cp .env.example .env
-# Edit .env with your OC_AUTH_TOKEN
+# Create .env with a random auth token (this secures the WebRTC endpoint)
+echo "OC_AUTH_TOKEN=$(openssl rand -hex 16)" > .env
 
 # Run the server
 uv run python server.py
 ```
 
-The server reads additional config from `~/.openclaw/openclaw.json`:
-- `gateway.port` and `gateway.auth.token`
-- `messages.tts.elevenlabs.apiKey` and `voiceId`
-- `env.vars.GROQ_API_KEY`
+**Note:** `OC_AUTH_TOKEN` is a secret you create — it's used to authenticate WebRTC connections to this server. Generate any random string you like.
 
 ### Access
 
@@ -91,7 +104,7 @@ cloudflared tunnel --url http://localhost:7860
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `OC_AUTH_TOKEN` | Yes | Auth token for WebRTC signaling |
+| `OC_AUTH_TOKEN` | Yes | Secret you create to secure WebRTC signaling (any random string) |
 | `SESSION_KEY` | No | OpenClaw session key (default: `agent:main:main`) |
 | `PORT` | No | Server port (default: `7860`) |
 | `GATEWAY_URL` | No | Gateway HTTP URL (default: `http://localhost:18789`) |
@@ -139,7 +152,7 @@ Configured via `~/.openclaw/openclaw.json`:
 }
 ```
 
-### Chatterbox (local, free)
+### [Chatterbox](https://github.com/resemble-ai/chatterbox) (local, free)
 
 Set `CHATTERBOX_URL` environment variable to use a local Chatterbox server:
 
