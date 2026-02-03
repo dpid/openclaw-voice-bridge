@@ -180,6 +180,12 @@ The web client requests location permission on session start. When granted, your
 User's current location: 45.5515, -122.6732
 ```
 
+## Agent Configuration
+
+The voice bridge prefixes transcriptions with 🎤 (TTS on) or 📖 (TTS muted) so your agent knows whether the response will be spoken aloud or read as text. Your agent should be concise and avoid markdown when 🎤 is active, and echo the transcription back so the user can confirm what was heard.
+
+See [CLAUDE.md](./CLAUDE.md#agent-configuration) for full details, response guidelines, and a system prompt snippet you can copy into your agent.
+
 ## Project Structure
 
 ```

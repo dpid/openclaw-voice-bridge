@@ -139,6 +139,71 @@ Browser <-> WebRTC <-> FastAPI/Pipecat <-> OpenClaw Gateway (chat completions)
 - `OC_AUTH_TOKEN` in `.env`
 - ElevenLabs credentials in `~/.openclaw/openclaw.json` (or Chatterbox running)
 
+## Agent Configuration
+
+The voice bridge prefixes every transcription with an emoji that tells the agent whether TTS is active. The agent needs to understand this convention to respond appropriately.
+
+### The Prefix Convention
+
+| Prefix | Meaning | Agent should... |
+|--------|---------|-----------------|
+| 🎤 | TTS is **on** — response will be spoken aloud | Be concise (1–3 sentences), avoid markdown |
+| 📖 | TTS is **muted** — user is reading | Respond normally, markdown is fine |
+
+Messages arrive to the agent as:
+```
+🎤 "What's the weather like?"
+📖 "Show me the server logs"
+```
+
+### Echo the Transcription
+
+The agent should echo the transcription at the start of every voice reply using a blockquote:
+
+```
+> 🎤 "What's the weather like?"
+
+About 45 degrees and cloudy in Portland right now.
+```
+
+This serves two purposes:
+1. **User confirmation** — shows what the speech-to-text actually heard
+2. **TTS stripping** — the `response_cleaner` processor removes this echo before synthesizing speech, so it won't be read aloud
+
+> **Important:** If the agent doesn't produce the echo in this format, the response cleaner can't strip it, and the transcription will be spoken back to the user.
+
+### Voice Response Guidelines
+
+When the 🎤 prefix is present (TTS active):
+- **1–3 sentences** for simple questions
+- **No markdown formatting** — bold, headers, tables, and bullet lists sound unnatural when spoken
+- **No filler phrases** — skip "Great question!" or "I'd be happy to help"
+- **Action confirmation** — if asked to do something, do it and confirm briefly
+
+When the 📖 prefix is present (TTS muted):
+- Respond as you would in any text chat
+- Markdown, code blocks, and longer responses are all fine
+
+### Example System Prompt Snippet
+
+Add something like this to the agent's instructions (system prompt, AGENTS.md, or equivalent):
+
+```
+## Voice Messages
+
+Voice messages arrive prefixed with an emoji:
+- 🎤 = TTS is on. Be concise (1-3 sentences), no markdown. Response will be spoken aloud.
+- 📖 = TTS is off. Full response OK, user is reading.
+
+Always echo the transcription at the start of your reply:
+
+> 🎤 "transcribed text here"
+
+Your actual response here.
+
+The echo confirms what was heard and is automatically stripped before TTS.
+```
+
 ## See Also
 
 - `AGENTS.md` - Detailed developer instructions
