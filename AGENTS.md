@@ -2,6 +2,8 @@
 
 Instructions for AI assistants working on this codebase.
 
+> **Installing for a user?** See the step-by-step installation guide in [CLAUDE.md](./CLAUDE.md#installation-guide-for-ai-assistants-helping-users).
+
 ## What This Is
 
 A hands-free voice interface for OpenClaw using Pipecat for real-time audio processing.
