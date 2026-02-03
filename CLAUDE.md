@@ -20,6 +20,8 @@ If either fails: **Stop.** User needs to install OpenClaw first. Direct them to 
 
 ### 2. Verify Required Config
 
+Requires `jq`. Install if missing: `brew install jq` (macOS) or `apt install jq` (Linux).
+
 ```bash
 # Check required keys (all must return non-null values)
 jq -r '.gateway.auth.token' ~/.openclaw/openclaw.json
@@ -46,13 +48,13 @@ uv sync
 uv run python test_gateway.py
 ```
 
-- **If "Chat completions endpoint is working!"** → Continue to step 5
-- **If 404 error** → Run this, then re-test:
+- **If "Chat completions endpoint is working!"** -- Continue to step 5
+- **If 404 error** -- Run this, then re-test:
   ```bash
   HASH=$(openclaw gateway call config.get 2>/dev/null | grep '"hash"' | cut -d'"' -f4)
   openclaw gateway call config.patch --params "{\"baseHash\": \"$HASH\", \"raw\": \"{\\\"gateway\\\":{\\\"http\\\":{\\\"endpoints\\\":{\\\"chatCompletions\\\":{\\\"enabled\\\":true}}}}}\"}"
   ```
-- **If connection error** → Gateway not running. User needs to start it.
+- **If connection error** -- Gateway not running. User needs to start it.
 
 ### 5. Create .env and Start Server
 
@@ -79,13 +81,27 @@ After server starts, tell the user:
 
 | Error | Fix |
 |-------|-----|
-| `Could not load openclaw.json` | OpenClaw not installed — user must install it first |
-| `Missing gateway.auth.token` | Gateway not configured — user needs `openclaw dashboard` |
-| `Missing GROQ_API_KEY` | No Groq key — user needs to add to OpenClaw config |
-| `Connection error` in test | Gateway not running — user needs to start it |
-| `404` in test | Chat completions not enabled — run config.patch above |
-| `OC_AUTH_TOKEN required` | Missing .env file — create it per step 5 |
-| `TTS: None configured` | No ElevenLabs key — set CHATTERBOX_URL or configure ElevenLabs |
+| `Could not load openclaw.json` | OpenClaw not installed -- user must install it first |
+| `Missing gateway.auth.token` | Gateway not configured -- user needs `openclaw dashboard` |
+| `Missing GROQ_API_KEY` | No Groq key -- user needs to add to OpenClaw config |
+| `Connection error` in test | Gateway not running -- user needs to start it |
+| `404` in test | Chat completions not enabled -- run config.patch above |
+| `OC_AUTH_TOKEN required` | Missing .env file -- create it per step 5 |
+| `TTS: None configured` | No ElevenLabs key -- set CHATTERBOX_URL or configure ElevenLabs |
+
+### Success Indicators
+
+When everything is working, the server output should include:
+
+```
+Configuration loaded
+  Port: 7860
+  Gateway: http://localhost:18789
+  Session: agent:main:main
+  TTS: ElevenLabs (or Chatterbox)
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:7860
+```
 
 ## Quick Reference
 
@@ -98,9 +114,9 @@ uv run pytest                 # Run unit tests
 ## Architecture
 
 ```
-Browser ←→ WebRTC ←→ FastAPI/Pipecat ←→ OpenClaw Gateway (chat completions)
-                         ↓
-              Groq STT → LLM → TTS (ElevenLabs/Chatterbox)
+Browser <-> WebRTC <-> FastAPI/Pipecat <-> OpenClaw Gateway (chat completions)
+                            |
+                 Groq STT -> LLM -> TTS (ElevenLabs/Chatterbox)
 ```
 
 ## Key Files

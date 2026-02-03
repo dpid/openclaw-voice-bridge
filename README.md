@@ -7,6 +7,7 @@ A hands-free voice interface for OpenClaw. WebRTC-based real-time conversation u
 ## Quickstart (for existing OpenClaw users)
 
 ```bash
+# Install uv if needed: curl -LsSf https://astral.sh/uv/install.sh | sh
 git clone https://github.com/dpid/openclaw-voice-bridge.git
 cd openclaw-voice-bridge
 uv sync
